@@ -20,6 +20,10 @@ class User implements UserInterface
 
     /**
      * @Assert\NotBlank
+     * @Assert\Email(
+     *     message = "The email '{{ value }}' is not a valid email.",
+     *     checkMX = true
+     * )
      * @ORM\Column(type="string", length=180, unique=true)
      */
     private $email;
