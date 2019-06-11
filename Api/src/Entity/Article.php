@@ -42,14 +42,9 @@ class Article
     private $price;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Image", mappedBy="article", orphanRemoval=true)
+     * @ORM\Column(type="json")
      */
-    private $images;
-
-    public function __construct()
-    {
-        $this->images = new ArrayCollection();
-    }
+    private $images = [];
 
     public function getId(): ?int
     {
@@ -104,33 +99,14 @@ class Article
         return $this;
     }
 
-    /**
-     * @return Collection|Image[]
-     */
-    public function getImages(): Collection
+    public function getImages(): array
     {
         return $this->images;
     }
 
-    public function addImage(Image $image): self
+    public function setImages(array $images): self
     {
-        if (!$this->images->contains($image)) {
-            $this->images[] = $image;
-            $image->setArticle($this);
-        }
-
-        return $this;
-    }
-
-    public function removeImage(Image $image): self
-    {
-        if ($this->images->contains($image)) {
-            $this->images->removeElement($image);
-            // set the owning side to null (unless already changed)
-            if ($image->getArticle() === $this) {
-                $image->setArticle(null);
-            }
-        }
+        $this->images = $images;
 
         return $this;
     }
