@@ -49,6 +49,16 @@ class User implements UserInterface
      */
     private $articles;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $token_expiration;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $token;
+
     public function __construct()
     {
         $this->articles = new ArrayCollection();
@@ -159,6 +169,30 @@ class User implements UserInterface
                 $article->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getTokenExpiration(): ?\DateTimeInterface
+    {
+        return $this->token_expiration;
+    }
+
+    public function setTokenExpiration(?\DateTimeInterface $token_expiration): self
+    {
+        $this->token_expiration = $token_expiration;
+
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): self
+    {
+        $this->token = $token;
 
         return $this;
     }

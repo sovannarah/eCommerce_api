@@ -7,7 +7,8 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use App\Entity\User;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use FOS\RestBundle\Controller\FOSRestController;
+// use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -20,7 +21,7 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 
-class AuthController extends FOSRestController
+class AuthController extends AbstractFOSRestController
 {
 	private $_salt;
 
@@ -42,8 +43,8 @@ class AuthController extends FOSRestController
 		AuthenticationUtils $authenticationUtils,
 		UserPasswordEncoderInterface $passwordEncoder
 	) {
-		$res = $this->authenticator($request, $passwordEncoder);
-		extract($res); //creates $errors, $user, $token
+		extract($this->authenticator($request, $passwordEncoder)); //creates $errors, $user, $token, $expire
+		// $res); 
 		/*
 			$errors = $res['errors'] ?? null;
 			$user = $res['user'] ?? null;
@@ -52,6 +53,12 @@ class AuthController extends FOSRestController
 
 		if (isset($errors))
 			return $this->json(['errors' => $errors]);
+
+		$user->setToken($token);
+		$user->setTokenExpiration(new \DateTime(date("Y-m-d H:i:s", $expire)));
+		$entityManager = $this->getDoctrine()->getManager();
+		$entityManager->persist($user);
+		$entityManager->flush();
 
 		return $this->json([
 			'email' => $user->getEmail(),
@@ -67,7 +74,7 @@ class AuthController extends FOSRestController
 	 * @param entity $request         Request instance
 	 * @param entity $passwordEncoder The Password encoder
 	 * 
-	 * @return array User entity and generated token
+	 * @return array User entity, generated token and token expiration date
 	 */
 	public function authenticator($request, $passwordEncoder) {
 		$credentials = [
@@ -83,14 +90,14 @@ class AuthController extends FOSRestController
 		if (!$validPassword)
 			return (['errors' => 'Invalid password.']);
 
-		$token = $this->tokenGenerator(2, $user->getEmail());
+		extract($this->tokenGenerator(2, $user->getEmail()));
 		/*
 			$request->getSession()->set(Security::LAST_USERNAME, $credentials['email']);
 			$request->getSession()->set('user_token', $token);
 			var_dump($request->getSession()->get(Security::LAST_USERNAME));
 			var_dump($request->getSession()->get('user_token'));
 		*/
-		return (['user' => $user, 'token' => $token]);
+		return (['user' => $user, 'token' => $token, 'expire' => $expire]);
 	}
 
 	/**
@@ -112,16 +119,15 @@ class AuthController extends FOSRestController
 	 * @param int    $expDays In how many days token is supposed to be invalid
 	 * @param string $email   The user email
 	 * 
-	 * @return string The encoded token
+	 * @return array The encoded token and the expiration date
 	 */
-	//TODO: hash token
 	public function tokenGenerator($expDays, $email) {
 		$expires = time() + (($expDays*24)*60*60); //2 days = 48h * 60m * 60s
 		// var_dump(date('d-m-Y  G:i:s', $expires));
 		$token['rand'] = rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
 		$token['expires'] = $expires;
 		$token['email'] = $email;
-		return(base64_encode(serialize($token)));
+		return(['token' => base64_encode(serialize($token)), 'expire' => $expires]);
 	}
 
 	/**

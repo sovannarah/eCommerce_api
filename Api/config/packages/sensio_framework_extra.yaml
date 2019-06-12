@@ -1,8 +1,5 @@
 sensio_framework_extra:
-<<<<<<< HEAD
-=======
     request: { converters: true }
     view: { annotations: false }
->>>>>>> make_user_routes
     router:
         annotations: false
