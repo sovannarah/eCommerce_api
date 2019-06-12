@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -19,6 +20,22 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
+    /**
+     * @param $token
+     * @return User|null
+     */
+    public function findOneByToken($token): ?User
+    {
+        try {
+            return $this->createQueryBuilder('u')
+                ->andWhere('u.token = :val')
+                ->setParameter('val', $token)
+                ->getQuery()
+                ->getOneOrNullResult();
+        } catch (NonUniqueResultException $e) {
+            return null;
+        }
+    }
     // /**
     //  * @return User[] Returns an array of User objects
     //  */

@@ -2,9 +2,8 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -43,6 +42,7 @@ class Article
 
     /**
      * @ORM\Column(type="json")
+     * @Assert\All({@Assert\Image})
      */
     private $images = [];
 
@@ -104,10 +104,11 @@ class Article
         return $this->images;
     }
 
-    public function setImages(array $images): self
+    public function setImages(array $imagePaths): self
     {
-        $this->images = $images;
+        $this->images = $imagePaths;
 
         return $this;
     }
+
 }
