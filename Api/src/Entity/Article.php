@@ -104,9 +104,9 @@ class Article
         return $this->images;
     }
 
-    public function setImages(array $imagePaths): self
+    public function setImages(array $images = []): self
     {
-        $this->images = $imagePaths;
+        $this->images = $images;
 
         return $this;
     }

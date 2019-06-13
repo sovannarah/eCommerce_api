@@ -7,16 +7,12 @@ use App\Entity\User;
 use App\Repository\ArticleRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Exception\InvalidParameterException;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
@@ -36,7 +32,7 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * @Route("/new", name="Article_new", methods={"POST"})
+     * @Route("/new", name="article_new", methods={"POST"})
      * @param Request $request
      * @param ValidatorInterface $validator
      * @param UserRepository $userRepository
@@ -49,24 +45,114 @@ class ArticleController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $entityManager
     ): JsonResponse {
-        $user = $userRepository->findOneByToken($request->headers->get('token'));
-        if (!$user || !$user->isAdmin()) {
-            throw $this->createAccessDeniedException();
-        }
+        $token = $request->headers->get('token');
+        $admin = $this->_findAdminOrFail($token, $userRepository);
         $article = new Article();
         try {
-            $article->setUser($user);
+            $article->setUser($admin);
             $article->setTitle($request->request->get('title'));
             $article->setDescription($request->request->get('description'));
             $article->setPrice($request->request->get('price'));
             $article->setImages($request->files->get('images'));
         } catch (\Exception $e) {
             $errors = $validator->validate($article);
+
             return $this->json($errors, 400);
         }
         $entityManager->persist($article);
         $entityManager->flush();
-        return $this->json($article->getId(), 201);
+
+        return $this->json($article, 201);
+    }
+
+    /**
+     * @Route("/{id}", name="article_show", methods={"GET"})
+     * @param Article $article
+     * @return JsonResponse
+     */
+    public function show(Article $article): JsonResponse
+    {
+        return $this->json($article);
+    }
+
+
+    /**
+     * @Route("/{id}", name="article_delete", methods={"DELETE"})
+     * @param Request $request
+     * @param Article $article
+     * @param UserRepository $userRepository
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
+    public function delete(
+        Request $request,
+        Article $article,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $token = $request->headers->get('token');
+        $this->_findAdminOrFail($token, $userRepository);
+        $entityManager->remove($article);
+        $entityManager->flush();
+
+        return new Response();
+    }
+
+    /**
+     * @Route("/{id}/update", name="article_update", methods={"PUT", "PATCH"})
+     * @param Request $request
+     * @param Article $article
+     * @param UserRepository $userRepository
+     * @param EntityManagerInterface $entityManager
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
+    public function update(
+        Request $request,
+        Article $article,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): JsonResponse {
+        $token = $request->headers->get('token');
+        $admin = $this->_findAdminOrFail($token, $userRepository);
+        try {
+            $article->setUser($admin);
+            foreach (['title', 'description', 'price'] as $fieldName) {
+                $article->{'set' . $fieldName}($request->request->get('title'));
+            }
+            $article->setImages($request->files->get('images'));
+        } catch (\Exception $e) {
+            $errors = $validator->validate($article);
+
+            return $this->json($errors, 400);
+        }
+        $entityManager->persist($article);
+        $entityManager->flush();
+
+        return $this->json($article, 201);
+    }
+
+    private function _updateImages(Article $article, array $images)
+    {
+
+    }
+
+
+    /**
+     * @param string $token
+     * @param UserRepository $userRepository
+     * @return User
+     * @throws AccessDeniedException
+     */
+    private function _findAdminOrFail(string $token, UserRepository $userRepository): User
+    {
+        $user = $userRepository->findOneByToken($token);
+        if (!$user || !$user->isAdmin()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return $user;
     }
 
 }
