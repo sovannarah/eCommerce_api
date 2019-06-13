@@ -18,3 +18,7 @@ Launch the server
 ```bash
 symfony server:start --no-tls
 ```
+
+## Usage
+
+See [ROUTES.md](https://gitlab.com/archivaris/ecommerce_api/blob/master/ROUTES.md)
