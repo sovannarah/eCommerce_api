@@ -100,6 +100,8 @@ class AuthController extends AbstractFOSRestController
 		return (['user' => $user, 'token' => $token, 'expire' => $expire]);
 	}
 
+	// Ordinateur > POrtable
+
 	/**
 	 * Check if password stored in DB matches with auth password
 	 * 
