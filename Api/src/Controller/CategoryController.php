@@ -16,6 +16,9 @@ class CategoryController extends AbstractController
 	{
 		$cat = $categories->find($id);
 
+		$art = $cat->getArticles()[0]->getTitle();
+		var_dump($art);
+
 		$categoryArr['category'] = ['id' => $cat->getId(), 'name' => $cat->getName()];
 
 		$categoryArr['childs'] = $this->getChildrens($cat, $cat->getId());
