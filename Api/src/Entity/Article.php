@@ -46,6 +46,22 @@ class Article
      */
     private $images;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Category", inversedBy="articles")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $category;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $nb_views;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $stock;
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
@@ -131,6 +147,42 @@ class Article
                 $image->setArticle(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    public function getNbViews(): ?int
+    {
+        return $this->nb_views;
+    }
+
+    public function setNbViews(?int $nb_views): self
+    {
+        $this->nb_views = $nb_views;
+
+        return $this;
+    }
+
+    public function getStock(): ?int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(?int $stock): self
+    {
+        $this->stock = $stock;
 
         return $this;
     }
