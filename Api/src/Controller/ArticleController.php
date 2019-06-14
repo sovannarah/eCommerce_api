@@ -32,7 +32,7 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * @Route("/new", name="article_new", methods={"POST"})
+     * @Route("/", name="article_new", methods={"POST"})
      * @param Request $request
      * @param ValidatorInterface $validator
      * @param UserRepository $userRepository
@@ -99,7 +99,7 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/update", name="article_update", methods={"PUT", "PATCH"})
+     * @Route("/{id}", name="article_update", methods={"PUT", "PATCH"})
      * @param Request $request
      * @param Article $article
      * @param UserRepository $userRepository
@@ -118,9 +118,9 @@ class ArticleController extends AbstractController
         $admin = $this->_findAdminOrFail($token, $userRepository);
         try {
             $article->setUser($admin);
-            foreach (['title', 'description', 'price'] as $fieldName) {
-                $article->{'set' . $fieldName}($request->request->get('title'));
-            }
+            $article->setTitle($request->request->get('title'));
+            $article->setDescription($request->request->get('description'));
+            $article->setPrice($request->request->get('price'));
             $article->setImages($request->files->get('images'));
         } catch (\Exception $e) {
             $errors = $validator->validate($article);
@@ -132,12 +132,6 @@ class ArticleController extends AbstractController
 
         return $this->json($article, 201);
     }
-
-    private function _updateImages(Article $article, array $images)
-    {
-
-    }
-
 
     /**
      * @param string $token
@@ -173,7 +167,7 @@ class ArticleController extends AbstractController
                 $dir = $this->getParameter('images_directory');
                 $newFiles[] = $file->move($dir, $fileName);
             } catch (FileException $e) {
-                // TODO ... handle exception if something happens during file upload
+                // T ODO ... handle exception if something happens during file upload
             }
         }
 

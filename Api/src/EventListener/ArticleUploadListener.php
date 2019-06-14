@@ -7,7 +7,6 @@ namespace App\EventListener;
 use App\Entity\Article;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -16,7 +15,7 @@ class ArticleUploadListener
 
     private $images_directory;
 
-    public function __construct($images_directory)
+    public function __construct(string $images_directory)
     {
         $this->images_directory = $images_directory;
     }
@@ -59,7 +58,12 @@ class ArticleUploadListener
         }
         $imageFiles = [];
         foreach ($entity->getImages() as $path) {
-            $imageFiles[] = new File($path);
+            if (!is_string($path)) {
+                continue;
+            }
+            $imageFiles[] = new File(
+                $this->images_directory.DIRECTORY_SEPARATOR.$path
+            );
         }
         $entity->setImages($imageFiles);
     }
