@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "a828773fd484f70b016b257e7e963107",
-=======
     "content-hash": "11e4c65acc98603bc5ba6d473756ba59",
->>>>>>> make_user_routes
     "packages": [
         {
             "name": "doctrine/annotations",
