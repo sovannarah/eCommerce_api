@@ -38,7 +38,8 @@ class Article implements \JsonSerializable
     private $description;
 
     /**
-     * @ORM\Column(type="integer", options={"unsigned"=true})
+     * @ORM\Column(type="integer", options={"unsigned"=true, })
+     * @Assert\PositiveOrZero
      */
     private $price;
 
@@ -130,10 +131,11 @@ class Article implements \JsonSerializable
             'price' => $this->getPrice(),
             'images' => array_map(
                 static function ($image) {
-                    return $image;
+                    return is_string($image) ? $image : $image->getFilename();
                 },
                 $this->getImages()
             ),
         ];
     }
+
 }

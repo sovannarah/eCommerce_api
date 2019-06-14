@@ -23,8 +23,11 @@ class User implements UserInterface
 
     /**
      * @Assert\NotBlank
+     * @Assert\Email(
+     *     message = "The email '{{ value }}' is not a valid email.",
+     *     checkMX = true
+     * )
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Assert\Email
      */
     private $email;
 
@@ -46,14 +49,14 @@ class User implements UserInterface
     private $articles;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $token;
-
-    /**
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $token_expiration;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $token;
 
     public function __construct()
     {
@@ -169,18 +172,6 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getToken(): ?string
-    {
-        return $this->token;
-    }
-
-    public function setToken(?string $token): self
-    {
-        $this->token = $token;
-
-        return $this;
-    }
-
     public function getTokenExpiration(): ?\DateTimeInterface
     {
         return $this->token_expiration;
@@ -189,6 +180,18 @@ class User implements UserInterface
     public function setTokenExpiration(?\DateTimeInterface $token_expiration): self
     {
         $this->token_expiration = $token_expiration;
+
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): self
+    {
+        $this->token = $token;
 
         return $this;
     }

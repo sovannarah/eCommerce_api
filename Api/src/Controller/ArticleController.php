@@ -7,14 +7,13 @@ use App\Entity\User;
 use App\Repository\ArticleRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
@@ -62,6 +61,7 @@ class ArticleController extends AbstractController
             return $this->json($errors, 400);
         }
         $entityManager->persist($article);
+        $entityManager->flush();
         $entityManager->flush();
 
         return $this->json($article, 201);
@@ -117,7 +117,6 @@ class ArticleController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator
     ): JsonResponse {
-        echo '<pre>' . count($request->request) . '</pre>';
         $admin = $this->_findAdminOrFail($userRepository, $request);
         try {
             $article->setUser($admin);
@@ -125,6 +124,9 @@ class ArticleController extends AbstractController
             $article->setDescription($request->request->get('description'));
             $article->setPrice($request->request->get('price'));
             $article->setImages($request->files->get('images'));
+            if ($validator->validate($article)->count()) {
+                throw new InvalidParameterException();
+            }
         } catch (\Exception $e) {
             $errors = $validator->validate($article);
 
@@ -133,7 +135,7 @@ class ArticleController extends AbstractController
         $entityManager->persist($article);
         $entityManager->flush();
 
-        return $this->json($article, 200);
+        return $this->json($article);
     }
 
     /**
