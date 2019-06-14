@@ -8,6 +8,7 @@ use App\Repository\ArticleRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -90,10 +91,10 @@ class ArticleController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        $token = $request->headers->get('token');
-        $this->_findAdminOrFail($token, $userRepository);
+        $this->_findAdminOrFail($userRepository, $request);
         $entityManager->remove($article);
         $entityManager->flush();
+        $this->_updateImages($article, []);
 
         return new Response();
     }
@@ -114,14 +115,13 @@ class ArticleController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator
     ): JsonResponse {
-        $token = $request->headers->get('token');
-        $admin = $this->_findAdminOrFail($token, $userRepository);
+        $admin = $this->_findAdminOrFail($userRepository, $request);
         try {
             $article->setUser($admin);
             $article->setTitle($request->request->get('title'));
             $article->setDescription($request->request->get('description'));
             $article->setPrice($request->request->get('price'));
-            $article->setImages($request->files->get('images'));
+            $this->_updateImages($article, $request->files->get('images'));
         } catch (\Exception $e) {
             $errors = $validator->validate($article);
 
@@ -134,42 +134,25 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * @param string $token
      * @param UserRepository $userRepository
+     * @param Request $request
      * @return User
-     * @throws AccessDeniedException
      */
-    private function _findAdminOrFail(string $token, UserRepository $userRepository): User
+    private function _findAdminOrFail(UserRepository $userRepository, Request $request): User
     {
-        $user = $userRepository->findOneByToken($token);
-        if (!$user || !$user->isAdmin()) {
+        $token = $request->headers->get('token');
+        $user = $userRepository->findAdminByToken($token);
+        if (!$user) {
             throw $this->createAccessDeniedException();
         }
 
         return $user;
     }
 
-}
-
-
-
-/*/*
- * @param string $userId
- * @param UploadedFile[] $uploadedFiles
- * @return array
- *//*
-    private function _saveImages(string $userId, array $uploadedFiles): array
+    private function _updateImages(Article $article, array $images): void
     {
-        $newFiles = [];
-        foreach ($uploadedFiles as $file) {
-            $fileName = md5(uniqid($userId)).'.'.$file->guessExtension();
-            try {
-                $dir = $this->getParameter('images_directory');
-                $newFiles[] = $file->move($dir, $fileName);
-            } catch (FileException $e) {
-                // T ODO ... handle exception if something happens during file upload
-            }
-        }
-
-        return $newFiles;
-    }*/
+        $oldImages = $article->getImages();
+        $article->setImages($images);
+        (new Filesystem())->remove($oldImages);
+    }
+}

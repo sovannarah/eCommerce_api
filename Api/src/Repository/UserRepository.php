@@ -24,12 +24,14 @@ class UserRepository extends ServiceEntityRepository
      * @param $token
      * @return User|null
      */
-    public function findOneByToken($token): ?User
+    public function findAdminByToken($token): ?User
     {
         try {
             return $this->createQueryBuilder('u')
                 ->andWhere('u.token = :val')
+                ->andWhere('u.roles LIKE :roles')
                 ->setParameter('val', $token)
+                ->setParameter('roles', '%"ROLE_ADMIN"%')
                 ->getQuery()
                 ->getOneOrNullResult();
         } catch (NonUniqueResultException $e) {
