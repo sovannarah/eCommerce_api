@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\ArticleRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -101,6 +102,7 @@ class ArticleController extends AbstractController
 
     /**
      * @Route("/{id}", name="article_update", methods={"PUT", "PATCH"})
+     * @Route("/{id}/update", methods={"POST"})
      * @param Request $request
      * @param Article $article
      * @param UserRepository $userRepository
@@ -115,13 +117,14 @@ class ArticleController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator
     ): JsonResponse {
+        echo '<pre>' . count($request->request) . '</pre>';
         $admin = $this->_findAdminOrFail($userRepository, $request);
         try {
             $article->setUser($admin);
             $article->setTitle($request->request->get('title'));
             $article->setDescription($request->request->get('description'));
             $article->setPrice($request->request->get('price'));
-            $this->_updateImages($article, $request->files->get('images'));
+            $article->setImages($request->files->get('images'));
         } catch (\Exception $e) {
             $errors = $validator->validate($article);
 
@@ -130,7 +133,7 @@ class ArticleController extends AbstractController
         $entityManager->persist($article);
         $entityManager->flush();
 
-        return $this->json($article, 201);
+        return $this->json($article, 200);
     }
 
     /**

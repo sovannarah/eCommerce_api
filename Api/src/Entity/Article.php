@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -107,6 +108,7 @@ class Article implements \JsonSerializable
 
     public function setImages(array $images = []): self
     {
+        (new Filesystem())->remove($this->images);
         $this->images = $images;
 
         return $this;
@@ -126,9 +128,12 @@ class Article implements \JsonSerializable
             'title' => $this->getTitle(),
             'description' => $this->getDescription(),
             'price' => $this->getPrice(),
-            'images' => array_map(static function(\SplFileInfo $image) {
-                return $image->getFilename();
-            } ,$this->getImages())
+            'images' => array_map(
+                static function ($image) {
+                    return $image;
+                },
+                $this->getImages()
+            ),
         ];
     }
 }
