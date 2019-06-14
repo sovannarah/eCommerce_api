@@ -16,15 +16,16 @@ class CategoryController extends AbstractController
 	{
 		$cat = $categories->find($id);
 
-		$art = $cat->getArticles()[0]->getTitle();
-		var_dump($art);
+		$articles = [];
+		$categoryArr = [
+			'category' => ['id' => $cat->getId(), 'name' => $cat->getName()],
+			'childs' => $this->getChildrens($cat, $cat->getId(), $articles),
+			'parents' => $this->getParents($cat)
+		];
 
-		$categoryArr['category'] = ['id' => $cat->getId(), 'name' => $cat->getName()];
-
-		$categoryArr['childs'] = $this->getChildrens($cat, $cat->getId());
-		$categoryArr['parents'] = $this->getParents($cat);
 		return $this->json([
-			$categoryArr
+			'category' => $categoryArr,
+			'articles' => $articles
 		]);
 	}
 	
@@ -52,23 +53,32 @@ class CategoryController extends AbstractController
 		]);
 	}
 
-	public function		getChildrens($cat, $idStart) {
+	public function		getChildrens($cat, $idStart, &$articles = null)
+	{
 		$categoryArr = [];
 		$child = $cat->getChildren();
 		$c = -1;
-		while (isset($child[++$c]))
-			$categoryArr[] = $this->getChildrens($child[$c], $idStart);
-		if ($idStart !== $cat->getId())
+		$tableLen = count($child);
+		while (++$c < $tableLen)
+			$categoryArr[] = $this->getChildrens($child[$c], $idStart,
+				$articles);
+		if ($idStart !== $cat->getId()) 
 			$categoryArr[] = ['id' => $cat->getId(), 'name' => $cat->getName()];
+		if ($articles) {
+			foreach ($cat->getArticles() as $article)
+			$articles[] = $article->getTitle();
+		}
 		return (array_reverse($categoryArr));
 	}
 
-	public function		getParents($cat) {
+	public function		getParents($cat)
+	{
 		$categoryArr = [];
 		$parent = $cat->getParent();
 		while (isset($parent))
 		{
-			$categoryArr[] = ['id' => $parent->getId(), 'name' => $parent->getName()];
+			$categoryArr[] = ['id' => $parent->getId(),
+				'name' => $parent->getName()];
 			$parent = $parent->getParent();
 		}
 		return (array_reverse($categoryArr));
