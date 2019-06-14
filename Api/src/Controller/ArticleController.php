@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Entity\Category;
 use App\Entity\User;
 use App\Repository\ArticleRepository;
+use App\Repository\CategoryRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,20 +38,20 @@ class ArticleController extends AbstractController
      * @Route("/", name="article_new", methods={"POST"})
      * @param Request $request
      * @param ValidatorInterface $validator
-     * @param UserRepository $userRepository
      * @param EntityManagerInterface $entityManager
      * @return JsonResponse
      */
-    public function new(
+    public function create(
         Request $request,
         ValidatorInterface $validator,
-        UserRepository $userRepository,
         EntityManagerInterface $entityManager
     ): JsonResponse {
-        $token = $request->headers->get('token');
-        $admin = $this->_findAdminOrFail($token, $userRepository);
+        $admin = $this->_findAdminOrFail($entityManager->getRepository(User::class), $request);
+        $categoryRepository = $entityManager->getRepository(Category::class);
+        $category = $categoryRepository->find($request->request->get('category_id'));
         $article = new Article();
         try {
+            $article->setCategory($category);
             $article->setUser($admin);
             $article->setTitle($request->request->get('title'));
             $article->setDescription($request->request->get('description'));
@@ -62,7 +64,7 @@ class ArticleController extends AbstractController
         }
         $entityManager->persist($article);
         $entityManager->flush();
-        $entityManager->flush();
+        $entityManager->refresh($article);
 
         return $this->json($article, 201);
     }
@@ -72,7 +74,7 @@ class ArticleController extends AbstractController
      * @param Article $article
      * @return JsonResponse
      */
-    public function show(Article $article): JsonResponse
+    public function read(Article $article): JsonResponse
     {
         return $this->json($article);
     }
@@ -105,7 +107,6 @@ class ArticleController extends AbstractController
      * @Route("/{id}/update", methods={"POST"})
      * @param Request $request
      * @param Article $article
-     * @param UserRepository $userRepository
      * @param EntityManagerInterface $entityManager
      * @param ValidatorInterface $validator
      * @return JsonResponse
@@ -113,36 +114,29 @@ class ArticleController extends AbstractController
     public function update(
         Request $request,
         Article $article,
-        UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator
     ): JsonResponse {
-        $admin = $this->_findAdminOrFail($userRepository, $request);
+        $admin = $this->_findAdminOrFail($entityManager->getRepository(User::class), $request);
+        $categoryRepository = $entityManager->getRepository(Category::class);
+        $category = $categoryRepository->find($request->request->get('category_id'));
         try {
+            $article->setCategory($category);
             $article->setUser($admin);
             $article->setTitle($request->request->get('title'));
             $article->setDescription($request->request->get('description'));
             $article->setPrice($request->request->get('price'));
             $article->setImages($request->files->get('images'));
-            if ($validator->validate($article)->count()) {
-                throw new InvalidParameterException();
-            }
         } catch (\Exception $e) {
-            $errors = $validator->validate($article);
-
-            return $this->json($errors, 400);
+            throw new InvalidParameterException('', 400, $e);
         }
         $entityManager->persist($article);
         $entityManager->flush();
+        $entityManager->refresh($article);
 
         return $this->json($article);
     }
 
-    /**
-     * @param UserRepository $userRepository
-     * @param Request $request
-     * @return User
-     */
     private function _findAdminOrFail(UserRepository $userRepository, Request $request): User
     {
         $token = $request->headers->get('token');

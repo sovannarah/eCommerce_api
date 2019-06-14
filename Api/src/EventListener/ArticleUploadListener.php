@@ -36,7 +36,6 @@ class ArticleUploadListener
             return;
         }
         $imageNames = [];
-        echo count($entity->getImages());
         foreach ($entity->getImages() as $image) {
             if ($image instanceof UploadedFile) {
                 $fileName = md5(uniqid($entity->getId(), true))

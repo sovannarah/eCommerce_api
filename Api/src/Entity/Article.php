@@ -119,7 +119,7 @@ class Article implements \JsonSerializable
 
     public function getImages(): array
     {
-        return $this->images;
+        return $this->images ?? [];
     }
 
     public function setImages(array $images = []): self
@@ -158,7 +158,7 @@ class Article implements \JsonSerializable
         return $this->category;
     }
 
-    public function setCategory(?Category $category): self
+    public function setCategory(Category $category): self
     {
         $this->category = $category;
 
