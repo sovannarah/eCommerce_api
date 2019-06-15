@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -39,6 +40,7 @@ class Article implements \JsonSerializable
     /**
      * @ORM\Column(type="integer", options={"unsigned"=true, })
      * @Assert\PositiveOrZero
+     * @Assert\GreaterThanOrEqual(0)
      */
     private $price;
 
@@ -51,6 +53,7 @@ class Article implements \JsonSerializable
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Category", inversedBy="articles")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotNull
      */
     private $category;
 
@@ -110,8 +113,17 @@ class Article implements \JsonSerializable
         return $this->price;
     }
 
+    /**
+     * @Assert\PositiveOrZero
+     * @param int $price >= 0
+     * @return Article
+     * @throws InvalidParameterException if $price is negative
+     */
     public function setPrice(int $price): self
     {
+        if ($price < 0) {
+            throw new InvalidParameterException('price must not be negative');
+        }
         $this->price = $price;
 
         return $this;
@@ -158,7 +170,7 @@ class Article implements \JsonSerializable
         return $this->category;
     }
 
-    public function setCategory(Category $category): self
+    public function setCategory(?Category $category): self
     {
         $this->category = $category;
 
