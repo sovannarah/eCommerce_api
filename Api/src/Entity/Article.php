@@ -45,7 +45,7 @@ class Article implements \JsonSerializable
     private $price;
 
     /**
-     * @ORM\Column(type="json")
+     * @ORM\Column(type="json", options={"default":"[]"})
      * @Assert\All({@Assert\Image})
      */
     private $images = [];
@@ -58,12 +58,16 @@ class Article implements \JsonSerializable
     private $category;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="integer", options={"default":0})
+     * @Assert\PositiveOrZero
+     * @Assert\GreaterThanOrEqual(0)
      */
-    private $nb_views;
+    private $nb_views = 0;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Assert\PositiveOrZero
+     * @Assert\GreaterThanOrEqual(0)
      */
     private $stock;
 
@@ -121,9 +125,7 @@ class Article implements \JsonSerializable
      */
     public function setPrice(int $price): self
     {
-        if ($price < 0) {
-            throw new InvalidParameterException('price must not be negative');
-        }
+        $this->_assertNotNeg($price);
         $this->price = $price;
 
         return $this;
@@ -136,8 +138,53 @@ class Article implements \JsonSerializable
 
     public function setImages(array $images = []): self
     {
-        (new Filesystem())->remove($this->images);
         $this->images = $images;
+
+        return $this;
+    }
+
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    public function getNbViews(): int
+    {
+        return $this->nb_views ?? 0;
+    }
+
+    public function setNbViews(int $nb_views = 0): self
+    {
+        $this->_assertNotNeg($nb_views);
+        $this->nb_views = $nb_views;
+
+        return $this;
+    }
+
+    public function incrementNbViews(): self
+    {
+        return $this->setNbViews($this->getNbViews() + 1);
+    }
+
+    public function getStock(): ?int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(?int $stock): self
+    {
+        if ($stock !== null) {
+            $this->_assertNotNeg($stock);
+        }
+        $this->stock = $stock;
 
         return $this;
     }
@@ -156,48 +203,39 @@ class Article implements \JsonSerializable
             'title' => $this->getTitle(),
             'description' => $this->getDescription(),
             'price' => $this->getPrice(),
+            'nb_views' => $this->getNbViews(),
+            'stock' => $this->getStock(),
             'images' => array_map(
                 static function ($image) {
-                    return is_string($image) ? $image : $image->getFilename();
+                    return ($image instanceof \SplFileInfo) ?
+                        $image->getFilename() :
+                        $image;
                 },
                 $this->getImages()
             ),
+            'category' => $this->_rec_jsonSerializeCategory($this->getCategory()),
         ];
     }
 
-    public function getCategory(): ?Category
+    private function _rec_jsonSerializeCategory(Category $category = null)
     {
-        return $this->category;
+        return !$category ?
+            null :
+            [
+                'id' => $category->getId(),
+                'name' => $category->getName(),
+                'parent' => $this->_rec_jsonSerializeCategory($category->getParent()),
+            ];
     }
 
-    public function setCategory(?Category $category): self
+    /**
+     * @param int $price
+     * @throws InvalidParameterException if $price < 0
+     */
+    private function _assertNotNeg(int $price): void
     {
-        $this->category = $category;
-
-        return $this;
-    }
-
-    public function getNbViews(): ?int
-    {
-        return $this->nb_views;
-    }
-
-    public function setNbViews(?int $nb_views): self
-    {
-        $this->nb_views = $nb_views;
-
-        return $this;
-    }
-
-    public function getStock(): ?int
-    {
-        return $this->stock;
-    }
-
-    public function setStock(?int $stock): self
-    {
-        $this->stock = $stock;
-
-        return $this;
+        if ($price < 0) {
+            throw new InvalidParameterException('price must not be negative');
+        }
     }
 }
