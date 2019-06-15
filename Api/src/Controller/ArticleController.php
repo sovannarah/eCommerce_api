@@ -47,6 +47,11 @@ class ArticleController extends AbstractController
      */
     public function read(Article $article): JsonResponse
     {
+        $article->incrementNbViews();
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($article);
+        $entityManager->flush();
+        $entityManager->refresh($article);
         return $this->json($article);
     }
 

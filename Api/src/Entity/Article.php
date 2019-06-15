@@ -45,7 +45,7 @@ class Article implements \JsonSerializable
     private $price;
 
     /**
-     * @ORM\Column(type="json")
+     * @ORM\Column(type="json", options={"default":"[]"})
      * @Assert\All({@Assert\Image})
      */
     private $images = [];
@@ -58,9 +58,9 @@ class Article implements \JsonSerializable
     private $category;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="integer", options={"default":0})
      */
-    private $nb_views;
+    private $nb_views = 0;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -136,8 +136,49 @@ class Article implements \JsonSerializable
 
     public function setImages(array $images = []): self
     {
-        (new Filesystem())->remove($this->images);
         $this->images = $images;
+
+        return $this;
+    }
+
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    public function getNbViews(): int
+    {
+        return $this->nb_views ?? 0;
+    }
+
+    public function setNbViews(?int $nb_views): self
+    {
+        $this->nb_views = $nb_views;
+
+        return $this;
+    }
+
+    public function incrementNbViews(): self
+    {
+        return $this->setNbViews($this->getNbViews() + 1);
+    }
+
+    public function getStock(): ?int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(?int $stock): self
+    {
+        $this->stock = $stock;
 
         return $this;
     }
@@ -156,48 +197,28 @@ class Article implements \JsonSerializable
             'title' => $this->getTitle(),
             'description' => $this->getDescription(),
             'price' => $this->getPrice(),
+            'nb_views' => $this->getNbViews(),
+            'stock' => $this->getStock(),
             'images' => array_map(
                 static function ($image) {
-                    return is_string($image) ? $image : $image->getFilename();
+                    return ($image instanceof \SplFileInfo) ?
+                        $image->getFilename() :
+                        $image;
                 },
                 $this->getImages()
             ),
+            'category' => $this->_rec_jsonSerializeCategory($this->getCategory()),
         ];
     }
 
-    public function getCategory(): ?Category
+    private function _rec_jsonSerializeCategory(Category $category = null)
     {
-        return $this->category;
-    }
-
-    public function setCategory(?Category $category): self
-    {
-        $this->category = $category;
-
-        return $this;
-    }
-
-    public function getNbViews(): ?int
-    {
-        return $this->nb_views;
-    }
-
-    public function setNbViews(?int $nb_views): self
-    {
-        $this->nb_views = $nb_views;
-
-        return $this;
-    }
-
-    public function getStock(): ?int
-    {
-        return $this->stock;
-    }
-
-    public function setStock(?int $stock): self
-    {
-        $this->stock = $stock;
-
-        return $this;
+        return !$category ?
+            null :
+            [
+                'id' => $category->getId(),
+                'name' => $category->getName(),
+                'parent' => $this->_rec_jsonSerializeCategory($category->getParent()),
+            ];
     }
 }
