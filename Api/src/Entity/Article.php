@@ -2,15 +2,16 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ArticleRepository")
  */
-class Article
+class Article implements \JsonSerializable
 {
     /**
      * @ORM\Id()
@@ -37,18 +38,22 @@ class Article
     private $description;
 
     /**
-     * @ORM\Column(type="integer", options={"unsigned"=true})
+     * @ORM\Column(type="integer", options={"unsigned"=true, })
+     * @Assert\PositiveOrZero
+     * @Assert\GreaterThanOrEqual(0)
      */
     private $price;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Image", mappedBy="article", orphanRemoval=true)
+     * @ORM\Column(type="json")
+     * @Assert\All({@Assert\Image})
      */
-    private $images;
+    private $images = [];
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Category", inversedBy="articles")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotNull
      */
     private $category;
 
@@ -61,11 +66,6 @@ class Article
      * @ORM\Column(type="integer", nullable=true)
      */
     private $stock;
-
-    public function __construct()
-    {
-        $this->images = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -113,42 +113,56 @@ class Article
         return $this->price;
     }
 
+    /**
+     * @Assert\PositiveOrZero
+     * @param int $price >= 0
+     * @return Article
+     * @throws InvalidParameterException if $price is negative
+     */
     public function setPrice(int $price): self
     {
+        if ($price < 0) {
+            throw new InvalidParameterException('price must not be negative');
+        }
         $this->price = $price;
 
         return $this;
     }
 
+    public function getImages(): array
+    {
+        return $this->images ?? [];
+    }
+
+    public function setImages(array $images = []): self
+    {
+        (new Filesystem())->remove($this->images);
+        $this->images = $images;
+
+        return $this;
+    }
+
     /**
-     * @return Collection|Image[]
+     * Specify data which should be serialized to JSON
+     * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
      */
-    public function getImages(): Collection
+    public function jsonSerialize()
     {
-        return $this->images;
-    }
-
-    public function addImage(Image $image): self
-    {
-        if (!$this->images->contains($image)) {
-            $this->images[] = $image;
-            $image->setArticle($this);
-        }
-
-        return $this;
-    }
-
-    public function removeImage(Image $image): self
-    {
-        if ($this->images->contains($image)) {
-            $this->images->removeElement($image);
-            // set the owning side to null (unless already changed)
-            if ($image->getArticle() === $this) {
-                $image->setArticle(null);
-            }
-        }
-
-        return $this;
+        return [
+            'id' => $this->getId(),
+            'title' => $this->getTitle(),
+            'description' => $this->getDescription(),
+            'price' => $this->getPrice(),
+            'images' => array_map(
+                static function ($image) {
+                    return is_string($image) ? $image : $image->getFilename();
+                },
+                $this->getImages()
+            ),
+        ];
     }
 
     public function getCategory(): ?Category

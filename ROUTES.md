@@ -5,7 +5,7 @@
 ### LOGIN
 
 **Route: "/login"**<br>
-**Parmeters**:<br>
+**Parameters**:<br>
 JSON:<br>
 ```json
 {

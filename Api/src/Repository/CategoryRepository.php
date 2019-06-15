@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Category;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @method Category|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,6 +20,24 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
+    /**
+     * Tries to find category by $id, throwing exception on failure
+     *
+     * @param $id
+     * @param null $lockMode
+     * @param null $lockVersion
+     * @return Category
+     * @throws NotFoundHttpException on failure
+     */
+    public function findOrFail($id, $lockMode = null, $lockVersion = null): Category
+    {
+        $category = $this->find($id, $lockMode, $lockVersion);
+        if ($category === null) {
+            $msg = sprintf('Unable to find %s with id: %s', $this->getClassName(), $id);
+            throw new NotFoundHttpException($msg);
+        }
+        return $category;
+    }
     // /**
     //  * @return Category[] Returns an array of Category objects
     //  */

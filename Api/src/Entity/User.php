@@ -28,7 +28,6 @@ class User implements UserInterface
      *     checkMX = true
      * )
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Assert\Email
      */
     private $email;
 
