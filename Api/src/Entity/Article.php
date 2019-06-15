@@ -59,11 +59,15 @@ class Article implements \JsonSerializable
 
     /**
      * @ORM\Column(type="integer", options={"default":0})
+     * @Assert\PositiveOrZero
+     * @Assert\GreaterThanOrEqual(0)
      */
     private $nb_views = 0;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Assert\PositiveOrZero
+     * @Assert\GreaterThanOrEqual(0)
      */
     private $stock;
 
@@ -121,9 +125,7 @@ class Article implements \JsonSerializable
      */
     public function setPrice(int $price): self
     {
-        if ($price < 0) {
-            throw new InvalidParameterException('price must not be negative');
-        }
+        $this->_assertNotNeg($price);
         $this->price = $price;
 
         return $this;
@@ -159,8 +161,9 @@ class Article implements \JsonSerializable
         return $this->nb_views ?? 0;
     }
 
-    public function setNbViews(?int $nb_views): self
+    public function setNbViews(int $nb_views = 0): self
     {
+        $this->_assertNotNeg($nb_views);
         $this->nb_views = $nb_views;
 
         return $this;
@@ -178,6 +181,9 @@ class Article implements \JsonSerializable
 
     public function setStock(?int $stock): self
     {
+        if ($stock !== null) {
+            $this->_assertNotNeg($stock);
+        }
         $this->stock = $stock;
 
         return $this;
@@ -220,5 +226,16 @@ class Article implements \JsonSerializable
                 'name' => $category->getName(),
                 'parent' => $this->_rec_jsonSerializeCategory($category->getParent()),
             ];
+    }
+
+    /**
+     * @param int $price
+     * @throws InvalidParameterException if $price < 0
+     */
+    private function _assertNotNeg(int $price): void
+    {
+        if ($price < 0) {
+            throw new InvalidParameterException('price must not be negative');
+        }
     }
 }

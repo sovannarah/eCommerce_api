@@ -29,9 +29,9 @@ class CategoryRepository extends ServiceEntityRepository
      * @return Category
      * @throws NotFoundHttpException on failure
      */
-    public function findOrFail($id, $lockMode = null, $lockVersion = null): Category
+    public function findOrFail($id = null, $lockMode = null, $lockVersion = null): Category
     {
-        $category = $this->find($id, $lockMode, $lockVersion);
+        $category = $id !== null ? $this->find($id, $lockMode, $lockVersion) : null;
         if ($category === null) {
             $msg = sprintf('Unable to find %s with id: %s', $this->getClassName(), $id);
             throw new NotFoundHttpException($msg);
