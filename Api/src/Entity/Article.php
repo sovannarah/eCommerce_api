@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -125,7 +124,7 @@ class Article implements \JsonSerializable
      */
     public function setPrice(int $price): self
     {
-        $this->_assertNotNeg($price);
+        self::_assertNotNeg($price);
         $this->price = $price;
 
         return $this;
@@ -163,7 +162,7 @@ class Article implements \JsonSerializable
 
     public function setNbViews(int $nb_views = 0): self
     {
-        $this->_assertNotNeg($nb_views);
+        self::_assertNotNeg($nb_views);
         $this->nb_views = $nb_views;
 
         return $this;
@@ -182,7 +181,7 @@ class Article implements \JsonSerializable
     public function setStock(?int $stock): self
     {
         if ($stock !== null) {
-            $this->_assertNotNeg($stock);
+            self::_assertNotNeg($stock);
         }
         $this->stock = $stock;
 
@@ -213,29 +212,29 @@ class Article implements \JsonSerializable
                 },
                 $this->getImages()
             ),
-            'category' => $this->_rec_jsonSerializeCategory($this->getCategory()),
+            'category' => self::_rec_jsonSerializeCategory($this->getCategory()),
         ];
     }
 
-    private function _rec_jsonSerializeCategory(Category $category = null)
-    {
-        return !$category ?
-            null :
-            [
-                'id' => $category->getId(),
-                'name' => $category->getName(),
-                'parent' => $this->_rec_jsonSerializeCategory($category->getParent()),
-            ];
-    }
+	private static function _rec_jsonSerializeCategory(Category $category = null): ?array
+	{
+		return !$category ?
+			null :
+			[
+				'id' => $category->getId(),
+				'name' => $category->getName(),
+				'parent' => self::_rec_jsonSerializeCategory($category->getParent()),
+			];
+	}
 
-    /**
-     * @param int $price
-     * @throws InvalidParameterException if $price < 0
-     */
-    private function _assertNotNeg(int $price): void
-    {
-        if ($price < 0) {
-            throw new InvalidParameterException('price must not be negative');
-        }
-    }
+	/**
+	 * @param int $price
+	 * @throws InvalidParameterException if $price < 0
+	 */
+	private static function _assertNotNeg(int $price): void
+	{
+		if ($price < 0) {
+			throw new InvalidParameterException('price must not be negative');
+		}
+	}
 }
