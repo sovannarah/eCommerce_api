@@ -138,15 +138,12 @@ img.src = apiUrl + '/uploads/images' + fileName // '10.43.12.3:8000/uploads/imag
 
 ### Update article
 
-`POST` `/article/{id}`
+* method: `POST` | `PUT` | `PATCH` 
+* route: `/article/{id}`
 
-##### Headers
+##### Headers, Body
 
 Same as 'Add'
-
-##### Body
-
-Same as 'Add' + `_method: 'PUT' | 'Patch`
 
 #### Returns
 
