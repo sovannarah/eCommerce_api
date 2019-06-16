@@ -90,6 +90,9 @@
             "config/packages/fos_rest.yaml"
         ]
     },
+    "fzaninotto/faker": {
+        "version": "v1.8.0"
+    },
     "hoa/compiler": {
         "version": "3.17.08.08"
     },
@@ -406,6 +409,9 @@
     },
     "symfony/yaml": {
         "version": "v4.3.1"
+    },
+    "willdurand/faker-bundle": {
+        "version": "1.4.1"
     },
     "willdurand/jsonp-callback-validator": {
         "version": "v1.1.0"

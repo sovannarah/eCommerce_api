@@ -71,6 +71,7 @@
     "require-dev": {
         "symfony/debug-bundle": "4.3.*",
         "symfony/maker-bundle": "^1.11",
-        "symfony/var-dumper": "4.3.*"
+        "symfony/var-dumper": "4.3.*",
+        "willdurand/faker-bundle": "^1.4"
     }
 }

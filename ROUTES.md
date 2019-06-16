@@ -60,6 +60,7 @@ ex:
 
 
 
+
 ## Article
 
 
@@ -104,7 +105,8 @@ ex:
 }
 ````
 
-! To access image, uses its name under /uploads/images. For example:
+**! ATTENTION** To access image, use its name under '/uploads/images'. For example:
+
 ````
 const fileName = fetchedArticle.images[3]; // filename == 'nn234nkl43.jpg'
 img.src = apiUrl + '/uploads/images' + fileName // '10.43.12.3:8000/uploads/images/nn234nkl43.jpg'
