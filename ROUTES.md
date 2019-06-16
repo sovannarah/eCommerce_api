@@ -60,7 +60,6 @@ ex:
 
 
 
-
 ## Article
 
 
@@ -139,7 +138,8 @@ img.src = apiUrl + '/uploads/images' + fileName // '10.43.12.3:8000/uploads/imag
 
 ### Update article
 
-`PUT / PATCH` `/article/{id}`
+* method: `POST` | `PUT` | `PATCH` 
+* route: `/article/{id}`
 
 ##### Headers, Body
 
@@ -151,9 +151,10 @@ Same as 'Add'
  * Body: same as 'Add'
 
 
+
 ### Delete article
 
-`DELETE` `/article/{id}'
+`DELETE` `/article/{id}`
 
 Headers must contain token.
 

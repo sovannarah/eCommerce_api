@@ -74,7 +74,7 @@ class ArticleController extends AbstractController
 	}
 
 	/**
-	 * @Route("/{id}", name="article_update", methods={"PUT", "PATCH"})
+	 * @Route("/{id}", name="article_update", methods={"PUT", "PATCH", "POST"})
 	 * @Route("/{id}/update", methods={"POST"})
 	 * @param Request $request
 	 * @param Article $article
