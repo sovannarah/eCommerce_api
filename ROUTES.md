@@ -153,7 +153,7 @@ Same as 'Add'
 
 ### Delete article
 
-`DELETE` `/article/{id}'
+`DELETE` `/article/{id}`
 
 Headers must contain token.
 
