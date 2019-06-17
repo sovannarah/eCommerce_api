@@ -76,30 +76,8 @@ class SearchController extends AbstractController
 			}
 		}
 
-//		if (isset($tval['title']))
-//		{
-//			$query->andWhere('a.title like :title');
-//			$query->setParameter('title', $tval['title'] . '%');
-//		}
 		if (count($tValCate) > 0)
 			$query->where($query->expr()->in('a.category', $tValCate));
-//		if (isset($tval['describtion']))
-//		{
-//			$query->andWhere('a.description like :description');
-//			$query->setParameter('description', $tval['description']. '%');
-//		}
-////		if (isset($val['model']))
-////			$query->andWhere('a.id_model = :model';
-//		if (isset($tval['priceMin']))
-//		{
-//			$query->andWhere('a.price > :priceMin');
-//			$query->setParameter('priceMin', $tval['priceMin']);
-//		}
-//		if (isset($tval['priceMax']))
-//		{
-//			$query->andWhere('a.price < :priceMax');
-//			$query->setParameter('priceMax', $tval['priceMax']);
-//		}
 		$art = $query->getQuery();
 		$tmp = $art->execute();
 		return ($tmp);
