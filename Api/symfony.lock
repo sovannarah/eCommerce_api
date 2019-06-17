@@ -431,13 +431,8 @@
     "symfony/yaml": {
         "version": "v4.3.1"
     },
-<<<<<<< HEAD
     "twig/twig": {
         "version": "v2.11.2"
-=======
-    "willdurand/faker-bundle": {
-        "version": "1.4.1"
->>>>>>> 343673c5ef742c1521e5d88439d960c011ddc60a
     },
     "willdurand/jsonp-callback-validator": {
         "version": "v1.1.0"
