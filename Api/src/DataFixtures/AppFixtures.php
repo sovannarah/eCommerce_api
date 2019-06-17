@@ -12,10 +12,20 @@ use Faker\Factory;
 use Faker\Generator;
 use Faker\ORM\Doctrine\Populator;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class AppFixtures extends Fixture
 {
+	/**
+	 * @var UserPasswordEncoderInterface
+	 */
+	private $userPasswordEncoder;
 
+
+	public function __construct(UserPasswordEncoderInterface $userPasswordEncoder)
+	{
+		$this->userPasswordEncoder = $userPasswordEncoder;
+	}
 
 	public function load(ObjectManager $manager): void
 	{
@@ -54,23 +64,12 @@ class AppFixtures extends Fixture
 			User::class,
 			5,
 			[
-				'password' => self::_getPasswordFormatter(),
 				'roles' => self::_getRolesFormatter(),
 				'token' => null,
-				'token_expiration' => self::_getTokenExpirationFormatter($generator),
+				'token_expiration' => null,
 			],
-			[self::getUserModifier()]
+			[self::getUserTokenModifier()]
 		);
-	}
-
-	private static function getUserModifier(): \Closure
-	{
-		return static function (User $user) {
-			$tokenData = AuthController::tokenGenerator(2, $user->getEmail());
-			$tokenExpiration = new \DateTime(date('Y-m-d H:i:s', $tokenData['expire']));
-			$user->setToken($tokenData['token'])
-				->setTokenExpiration($tokenExpiration);
-		};
 	}
 
 	private static function _getNameFormatter(Generator $generator): \Closure
@@ -87,33 +86,41 @@ class AppFixtures extends Fixture
 		};
 	}
 
-	private static function _getPasswordFormatter(): \Closure
-	{
-		return static function () {
-			return \password_hash('qwerty', PASSWORD_ARGON2I);
-		};
-	}
-
 	private static function _getImagesFormatter(Generator $generator): \Closure
 	{
 		return static function () use ($generator) {
 			$images = [];
 			for ($i = $generator->numberBetween(0, 3); $i > 0; --$i) {
-				$images[] = new File($generator->file('../fixture_images', 'public/uploads/images'));
+				$images[] = new File(
+					$generator->file(
+						'../fixture_images',
+						'public/uploads/images'
+					)
+				);
 			}
 
 			return $images;
 		};
 	}
 
-	/**
-	 * @param Generator $generator
-	 * @return \Closure
-	 */
-	private static function _getTokenExpirationFormatter(Generator $generator): \Closure
+	private static function getUserTokenModifier(): \Closure
 	{
-		return static function () use ($generator) {
-			return $generator->dateTimeBetween('now', '+30 years');
+		return static function (User $user) {
+			$tokenData = AuthController::tokenGenerator(2, $user->getEmail());
+			$tokenExpiration = new \DateTime(
+				date('Y-m-d H:i:s', $tokenData['expire'])
+			);
+			$user->setToken($tokenData['token'])
+				->setTokenExpiration($tokenExpiration);
+		};
+	}
+
+	private function _getUserPasswordModifier(): \Closure
+	{
+		return function (User $user) {
+			$password = $this->userPasswordEncoder
+				->encodePassword($user, 'qwerty');
+			$user->setPassword($password);
 		};
 	}
 
