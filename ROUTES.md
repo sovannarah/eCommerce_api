@@ -5,12 +5,13 @@
 ### LOGIN
 
 **Route: "/login"**<br>
+**Method: POST**<br>
 **Parmeters**:<br>
 JSON:<br>
 ```json
 {
-	"email": "myadress@mail.com",
-	"password": "userPlainPassword"
+    "email": "myadress@mail.com",
+    "password": "userPlainPassword"
 }
 ```
 
@@ -21,9 +22,9 @@ You'll have to send the token as request header on every request.
 ex:
 ```json
 {
-	"user": User::class,
-	"role": ["ROLE_ADMIN"],
-	"token": "YTozOn[...]29tIjt9"
+    "user": User::class,
+    "role": ["ROLE_ADMIN"],
+    "token": "YTozOn[...]29tIjt9"
 }
 ```
 
@@ -37,12 +38,13 @@ $user.getRoles(); //returns an array of user's roles
 ### REGISTER
 
 **Route: "/register"**<br>
+**Method: POST**<br>
 **Parmeters**:<br>
 JSON:<br>
 ```json
 {
-	"email": "myadress@mail.com",
-	"password": "userPlainPassword"
+    "email": "myadress@mail.com",
+    "password": "userPlainPassword"
 }
 ```
 
@@ -52,7 +54,74 @@ A JSON containing the user email, and his new id.
 ex:
 ```json
 {
-	"email": "myadress@mail.com",
-	"user_id": 2,
+    "email": "myadress@mail.com",
+    "user_id": 2,
 }
+```
+
+## *Articles*
+## *Categories*
+
+### GET ALL CATEGORIES
+
+**Route: "/category"**<br>
+**Method: GET**<br>
+
+**Return**:<br>
+Returns a json containing all the main categories and their childrens.
+
+ex:
+```json
+[
+    {
+        "1": {
+            "name": "Ecran",
+            "sub": []
+        },
+        "2": {
+            "name": "Peripherique",
+            "sub": [
+                [
+                    {
+                        "id": 7,
+                        "name": "Clavier"
+                    }
+                ],
+                [
+                    {
+                        "id": 8,
+                        "name": "Souris"
+                    }
+                ]
+            ]
+        },
+        "3": {
+            "name": "Ordinateurs",
+            "sub": [
+                [
+                    {
+                        "id": 6,
+                        "name": "Tour"
+                    }
+                ],
+```
+...
+
+### GET SPECIFIC CATEGORY AND IT'S ARTICLES
+
+**Route: "/category/{id}"**<br>
+**Method: GET**<br>
+
+**Parmeters**:<br>
+URL:<br>
+name | type | description
+id | 
+"id": int: id of category
+
+**Return**:<br>
+Returns a json containing all the main categories and their childrens.
+
+ex:
+```json
+
 ```
