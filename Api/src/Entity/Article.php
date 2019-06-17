@@ -2,15 +2,15 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ArticleRepository")
  */
-class Article
+class Article implements \JsonSerializable
 {
     /**
      * @ORM\Id()
@@ -37,35 +37,38 @@ class Article
     private $description;
 
     /**
-     * @ORM\Column(type="integer", options={"unsigned"=true})
+     * @ORM\Column(type="integer", options={"unsigned"=true, })
+     * @Assert\PositiveOrZero
+     * @Assert\GreaterThanOrEqual(0)
      */
     private $price;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Image", mappedBy="article", orphanRemoval=true)
+     * @ORM\Column(type="json", options={"default":"[]"})
+     * @Assert\All({@Assert\Image})
      */
-    private $images;
+    private $images = [];
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Category", inversedBy="articles")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotNull
      */
     private $category;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="integer", options={"default":0})
+     * @Assert\PositiveOrZero
+     * @Assert\GreaterThanOrEqual(0)
      */
-    private $nb_views;
+    private $nb_views = 0;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Assert\PositiveOrZero
+     * @Assert\GreaterThanOrEqual(0)
      */
     private $stock;
-
-    public function __construct()
-    {
-        $this->images = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -113,43 +116,32 @@ class Article
         return $this->price;
     }
 
+    /**
+     * @Assert\PositiveOrZero
+     * @param int $price >= 0
+     * @return Article
+     * @throws InvalidParameterException if $price is negative
+     */
     public function setPrice(int $price): self
     {
+        self::_assertNotNeg($price);
         $this->price = $price;
 
         return $this;
     }
 
-    /**
-     * @return Collection|Image[]
-     */
-    public function getImages(): Collection
+    public function getImages(): array
     {
-        return $this->images;
+        return $this->images ?? [];
     }
 
-    public function addImage(Image $image): self
+    public function setImages(array $images = []): self
     {
-        if (!$this->images->contains($image)) {
-            $this->images[] = $image;
-            $image->setArticle($this);
-        }
+        $this->images = $images;
 
         return $this;
     }
 
-    public function removeImage(Image $image): self
-    {
-        if ($this->images->contains($image)) {
-            $this->images->removeElement($image);
-            // set the owning side to null (unless already changed)
-            if ($image->getArticle() === $this) {
-                $image->setArticle(null);
-            }
-        }
-
-        return $this;
-    }
 
     public function getCategory(): ?Category
     {
@@ -163,16 +155,22 @@ class Article
         return $this;
     }
 
-    public function getNbViews(): ?int
+    public function getNbViews(): int
     {
-        return $this->nb_views;
+        return $this->nb_views ?? 0;
     }
 
-    public function setNbViews(?int $nb_views): self
+    public function setNbViews(int $nb_views = 0): self
     {
+        self::_assertNotNeg($nb_views);
         $this->nb_views = $nb_views;
 
         return $this;
+    }
+
+    public function incrementNbViews(): self
+    {
+        return $this->setNbViews($this->getNbViews() + 1);
     }
 
     public function getStock(): ?int
@@ -182,8 +180,61 @@ class Article
 
     public function setStock(?int $stock): self
     {
+        if ($stock !== null) {
+            self::_assertNotNeg($stock);
+        }
         $this->stock = $stock;
 
         return $this;
     }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'id' => $this->getId(),
+            'title' => $this->getTitle(),
+            'description' => $this->getDescription(),
+            'price' => $this->getPrice(),
+            'nb_views' => $this->getNbViews(),
+            'stock' => $this->getStock(),
+            'images' => array_map(
+                static function ($image) {
+                    return ($image instanceof \SplFileInfo) ?
+                        $image->getFilename() :
+                        $image;
+                },
+                $this->getImages()
+            ),
+            'category' => self::_rec_jsonSerializeCategory($this->getCategory()),
+        ];
+    }
+
+	private static function _rec_jsonSerializeCategory(Category $category = null): ?array
+	{
+		return !$category ?
+			null :
+			[
+				'id' => $category->getId(),
+				'name' => $category->getName(),
+				'parent' => self::_rec_jsonSerializeCategory($category->getParent()),
+			];
+	}
+
+	/**
+	 * @param int $price
+	 * @throws InvalidParameterException if $price < 0
+	 */
+	private static function _assertNotNeg(int $price): void
+	{
+		if ($price < 0) {
+			throw new InvalidParameterException('price must not be negative');
+		}
+	}
 }
