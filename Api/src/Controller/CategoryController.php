@@ -17,8 +17,33 @@ use App\Repository\CategoryRepository;
  */
 class CategoryController extends AbstractController
 {
+
+	/**
+	 * @Route("/", name="all_categories", methods={"GET"})
+	 * 
+	 * @param CategoryRepository $categories
+	 * @return json Name, id of all categoried and subcategories
+	 */
+	public function		getCategories(CategoryRepository $categories)
+	{
+		$cats = [];
+		$cat = $categories->findBy(['parent' => null]);
+
+		foreach ($cat as $key => $value) {
+			$cats[$value->getId()] = [
+				'name' => $value->getName(),
+				'sub' => $this->getChildrens($value, $value->getId())
+			];
+		}
+		return $this->json([$cats]);
+	}
+
 	/**
 	 * @Route("/{id}", name="category", methods={"GET"})
+	 * 
+	 * @param CategoryRepository $categories
+	 * @param int|string         $id         Requested category
+	 * @return json requested category, parents names, subcategories and all articles of current and sub
 	 */
 	public function		getCategory(CategoryRepository $categories, $id)
 	{
@@ -35,54 +60,6 @@ class CategoryController extends AbstractController
 			'category' => $categoryArr,
 			'articles' => $articles
 		]);
-	}
-	
-	/**
-	 * @Route("/", name="all_categories", methods={"GET"})
-	 */
-	public function		getCategories(CategoryRepository $categories)
-	{
-		$cats = [];
-		$cat = $categories->findBy(['parent' => null]);
-
-		foreach ($cat as $key => $value) {
-			$cats[$value->getId()] = [
-				'name' => $value->getName(),
-				'sub' => $this->getChildrens($value, $value->getId())
-			];
-		}
-		return $this->json([$cats]);
-	}
-
-	private function	getChildrens($cat, $idStart, &$articles = null)
-	{
-		$categoryArr = [];
-		$child = $cat->getChildren();
-		$c = -1;
-		$tableLen = count($child);
-		while (++$c < $tableLen)
-			$categoryArr[] = $this->getChildrens($child[$c], $idStart,
-				$articles);
-		if ($idStart !== $cat->getId()) 
-			$categoryArr[] = ['id' => $cat->getId(), 'name' => $cat->getName()];
-		if ($articles) {
-			foreach ($cat->getArticles() as $article)
-			$articles[] = $article->getTitle();
-		}
-		return (array_reverse($categoryArr));
-	}
-
-	private function	getParents($cat)
-	{
-		$categoryArr = [];
-		$parent = $cat->getParent();
-		while (isset($parent))
-		{
-			$categoryArr[] = ['id' => $parent->getId(),
-				'name' => $parent->getName()];
-			$parent = $parent->getParent();
-		}
-		return (array_reverse($categoryArr));
 	}
 
 	/**
@@ -151,16 +128,84 @@ class CategoryController extends AbstractController
 	}
 
 	/**
+	 * @Route("/{id}", name="del_category", methods={"DELETE"})
+	 */
+	public function		deleteCategory(
+		CategoryRepository $categories,
+		EntityManagerInterface $manger,
+		$id
+	) {
+		$cat = $categories->find($id);
+
+		if (!$cat)
+			return $this->json(['errors' => "Impossible de trouver la categorie a supprimer"]);
+
+		$manger->remove($cat);
+		$manger->flush();
+
+		return $this->json(["Deleted" => $id]);
+
+		// return $this->json([
+		// 	'category' => $categoryArr,
+		// 	'articles' => $articles
+		// ]);
+	} 
+
+
+	private function	getChildrens($cat, $idStart, &$articles = null)
+	{
+		$categoryArr = [];
+		$child = $cat->getChildren();
+		$c = -1;
+		$tableLen = count($child);
+		while (++$c < $tableLen)
+			$categoryArr[] = $this->getChildrens($child[$c], $idStart,
+				$articles);
+		if ($idStart !== $cat->getId()) 
+			$categoryArr[] = ['id' => $cat->getId(), 'name' => $cat->getName()];
+		if ($articles !== null) {
+			foreach ($cat->getArticles() as $article)
+				$articles[$article->getId()] = [
+					'user' => [
+						'id' => $article->getUser()->getId(),
+						'name' => null,
+						'mail' => $article->getUser()->getEmail()
+					],
+					'title' => $article->getTitle(),
+					'description' => $article->getDescription(),
+					'price' => $article->getPrice(),
+					'categorie' => $article->getCategory()->getName(),
+					'nb_views' => $article->getNbViews(),
+					'stock' => $article->getStock()
+				];
+		}
+		return (array_reverse($categoryArr));
+	}
+
+	private function	getParents($cat)
+	{
+		$categoryArr = [];
+		$parent = $cat->getParent();
+		while (isset($parent))
+		{
+			$categoryArr[] = ['id' => $parent->getId(),
+				'name' => $parent->getName()];
+			$parent = $parent->getParent();
+		}
+		return (array_reverse($categoryArr));
+	}
+
+	/**
 	 * @param $token
 	 * @param UserRepository $uRep
 	 * @return \App\Entity\User|null
 	 */
-	/* private function    isAdmin($token, UserRepository $uRep)
+	private function	isAdmin($token, UserRepository $uRep)
 	{
 		$user = $uRep->findOneBy(['token' => $token]);
 		if (!$user || $user->isAdmin() !== true)
 			return (null);
 		return ($user);
 
-	} */
+	}
 }
