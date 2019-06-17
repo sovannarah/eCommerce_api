@@ -44,7 +44,7 @@ class Article implements \JsonSerializable
     private $price;
 
     /**
-     * @ORM\Column(type="json", options={"default":"[]"})
+     * @ORM\Column(type="json")
      * @Assert\All({@Assert\Image})
      */
     private $images = [];
