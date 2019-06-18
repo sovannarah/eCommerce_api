@@ -52,17 +52,25 @@ class ArticleController extends AbstractController
 	}
 
 	/**
+	 * Reads and returns an article by id.
+	 * Unless admin token is passed, nb_views is incremented on the returned article
+	 *
 	 * @Route("/{id}", name="article_show", methods={"GET"})
+	 * @param Request $request
 	 * @param Article $article
 	 * @return JsonResponse
 	 */
-	public function read(Article $article): JsonResponse
+	public function read(Request $request, Article $article): JsonResponse
 	{
-		$article->incrementNbViews();
 		$entityManager = $this->getDoctrine()->getManager();
-		$entityManager->persist($article);
-		$entityManager->flush();
-		$entityManager->refresh($article);
+		$token = $request->headers->get('token');
+		$userRepository = $entityManager->getRepository(User::class);
+		if (!$token || !$userRepository->findAdminByToken($token)) {
+			$article->incrementNbViews();
+			$entityManager->persist($article);
+			$entityManager->flush();
+			$entityManager->refresh($article);
+		}
 
 		return $this->json($article);
 	}
