@@ -32,6 +32,7 @@ class CategoryController extends AbstractController
 		foreach ($cat as $key => $value) {
 			$cats[$value->getId()] = [
 				'name' => $value->getName(),
+				"id" => $value->getId(),
 				'sub' => $this->getChildrens($value, $value->getId())
 			];
 		}
