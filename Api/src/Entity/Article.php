@@ -104,7 +104,7 @@ class Article implements \JsonSerializable
 	 * @return Article
 	 * @throws InvalidParameterException if $title is null
 	 */
-	public function setTitle(?string $title): self
+	public function setTitle(?$title): self
 	{
 		self::_assertNotNull('title', $title);
 		$this->title = $title;
@@ -122,7 +122,7 @@ class Article implements \JsonSerializable
 	 * @return Article
 	 * @throws InvalidParameterException if $description is null
 	 */
-	public function setDescription(?string $description): self
+	public function setDescription(?$description): self
 	{
 		self::_assertNotNull('description', $description);
 		$this->description = $description;
@@ -141,7 +141,7 @@ class Article implements \JsonSerializable
 	 * @return Article
 	 * @throws InvalidParameterException if $price is negative ot null
 	 */
-	public function setPrice(?int $price): self
+	public function setPrice(?$price): self
 	{
 		self::_assertNotNegInt('price', $price);
 		$this->price = $price;
@@ -154,7 +154,7 @@ class Article implements \JsonSerializable
 		return $this->images ?? [];
 	}
 
-	public function setImages(array $images = []): self
+	public function setImages($images = []): self
 	{
 		$this->images = $images;
 
@@ -185,7 +185,7 @@ class Article implements \JsonSerializable
 		return $this->nb_views ?? 0;
 	}
 
-	public function setNbViews(int $nb_views = 0): self
+	public function setNbViews($nb_views = 0): self
 	{
 		self::_assertNotNegInt('nb_views', $nb_views);
 		$this->nb_views = $nb_views;
@@ -208,7 +208,7 @@ class Article implements \JsonSerializable
 	 * @return Article
 	 * @throws InvalidParameterException if $stock is not null, or positive or zero int
 	 */
-	public function setStock(?int $stock): self
+	public function setStock(?$stock): self
 	{
 		if ($stock !== null) {
 			self::_assertNotNegInt('stock', $stock);
