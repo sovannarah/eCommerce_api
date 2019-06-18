@@ -78,7 +78,7 @@ ex:
 
 
 
-### Get article by id
+### Get Article by id
 `GET` `/article/{id}`
 
 ##### Returns
@@ -111,8 +111,16 @@ img.src = apiUrl + '/uploads/images' + fileName // '10.43.12.3:8000/uploads/imag
 ````
 
 
+### Increment Article views
+`PUT` | `PATCH` `/article/{id}/increment`
 
-### Add article
+Increments the nb_views on an Article 
+
+#### Returns
+Updated Article JSON (like in read `GET`)
+
+
+### Add Article
 `POST` `/article`
 
 #### Sent Data
@@ -131,11 +139,11 @@ img.src = apiUrl + '/uploads/images' + fileName // '10.43.12.3:8000/uploads/imag
  
 #### Returns
  * HTTP Status: `201`
- * Body: `{ /* data of new Article (like get) */ }`
+ * Body: `{ /* data of new Article (like GET) */ }`
 
 
 
-### Update article
+### Update Article
 
 `POST` `/article/{id}`
 
@@ -150,7 +158,7 @@ Same as 'Add'
 
 
 
-### Delete article
+### Delete Article
 
 `DELETE` `/article/{id}`
 
