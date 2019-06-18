@@ -152,8 +152,9 @@ class ArticleController extends AbstractController
 	 * @param Article $article
 	 * @param UploadedFile[] $images
 	 */
-	private static function _updateImages(Article $article, array $images): void
+	private static function _updateImages(Article $article, array $images = null): void
 	{
+		$images = $images ?? [];
 		foreach ($images as $image) {
 			if (!getimagesize($image->getRealPath())) {
 				throw new BadRequestHttpException(
