@@ -211,7 +211,7 @@ class Article implements \JsonSerializable
 	public function setStock(?int $stock): self
 	{
 		if ($stock !== null) {
-			self::_assertNotNegInt($stock);
+			self::_assertNotNegInt('stock', $stock);
 		}
 		$this->stock = $stock;
 
