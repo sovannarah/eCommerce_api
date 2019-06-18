@@ -8,10 +8,15 @@ use App\Repository\ArticleRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\{File\UploadedFile, JsonResponse, Request, Response};
+use Symfony\Component\HttpFoundation\{File\UploadedFile,
+	JsonResponse,
+	Request,
+	Response};
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 
@@ -21,7 +26,7 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 class ArticleController extends AbstractController
 {
 	/**
-	 * @Route("/", name="article_index", methods={"GET"})
+	 * @Route("", name="article_index", methods={"GET"})
 	 * @param ArticleRepository $articleRepository
 	 * @return Response
 	 */
@@ -31,7 +36,7 @@ class ArticleController extends AbstractController
 	}
 
 	/**
-	 * @Route("/", name="article_new", methods={"POST"})
+	 * @Route("", name="article_new", methods={"POST"})
 	 * @param Request $request
 	 * @return Response
 	 */
@@ -42,6 +47,7 @@ class ArticleController extends AbstractController
 		if ($response->getStatusCode() === 200) {
 			$response->setStatusCode(201);
 		}
+
 		return $response;
 	}
 
@@ -73,7 +79,9 @@ class ArticleController extends AbstractController
 		try {
 			$this->_findAdminOrFail($request);
 		} catch (\Exception $e) {
-			return (new Response())->setStatusCode($e->getCode());
+			$statusCode = $e instanceof HttpException ? $e->getStatusCode() : 400;
+
+			return $this->json($e->getMessage(), $statusCode);
 		}
 		$entityManager = $this->getDoctrine()->getManager();
 		$entityManager->remove($article);
@@ -106,7 +114,9 @@ class ArticleController extends AbstractController
 			$article->setStock($request->request->get('stock'));
 			self::_updateImages($article, $request->files->get('images'));
 		} catch (\Exception $e) {
-			return $this->json($e->getMessage(), $e->getCode());
+			$statusCode = $e instanceof HttpException ? $e->getStatusCode() : 400;
+
+			return $this->json($e->getMessage(), $statusCode);
 		}
 		$entityManager->persist($article);
 		$entityManager->flush();
@@ -119,20 +129,20 @@ class ArticleController extends AbstractController
 	/**
 	 * @param Request $request
 	 * @return User
-	 * @throws AccessDeniedException
+	 * @throws AccessDeniedException | UnauthorizedHttpException
 	 */
 	private function _findAdminOrFail(Request $request): User
 	{
 		$token = $request->headers->get('token');
 		if (!$token) {
-			throw new UnauthorizedHttpException('Missing Token');
+			throw new UnauthorizedHttpException('', 'Missing Token');
 		}
 		$user = $this->getDoctrine()
 			->getManager()
 			->getRepository(User::class)
 			->findAdminByToken($token);
 		if (!$user) {
-			throw $this->createAccessDeniedException();
+			throw new AccessDeniedHttpException();
 		}
 
 		return $user;
@@ -146,7 +156,7 @@ class ArticleController extends AbstractController
 	{
 		foreach ($images as $image) {
 			if (!getimagesize($image->getRealPath())) {
-				throw new InvalidParameterException(
+				throw new BadRequestHttpException(
 					'Not an image: '.$image->getClientOriginalName()
 				);
 			}
