@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, JsonResponse, Request, Response};
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -32,11 +33,16 @@ class ArticleController extends AbstractController
 	/**
 	 * @Route("/", name="article_new", methods={"POST"})
 	 * @param Request $request
-	 * @return JsonResponse
+	 * @return Response
 	 */
-	public function create(Request $request): JsonResponse
+	public function create(Request $request): Response
 	{
-		return $this->update($request, new Article())->setStatusCode(201);
+		$response = $this->update($request, new Article());
+
+		if ($response->getStatusCode() === 200) {
+			$response->setStatusCode(201);
+		}
+		return $response;
 	}
 
 	/**
@@ -60,11 +66,15 @@ class ArticleController extends AbstractController
 	 * @Route("/{id}", name="article_delete", methods={"DELETE"})
 	 * @param Request $request
 	 * @param Article $article
-	 * @return Response
+	 * @return Response empty response with appropriate status code
 	 */
 	public function delete(Request $request, Article $article): Response
 	{
-		$this->_findAdminOrFail($request);
+		try {
+			$this->_findAdminOrFail($request);
+		} catch (\Exception $e) {
+			return (new Response())->setStatusCode($e->getCode());
+		}
 		$entityManager = $this->getDoctrine()->getManager();
 		$entityManager->remove($article);
 		$entityManager->flush();
@@ -80,13 +90,14 @@ class ArticleController extends AbstractController
 	 * @param Article $article
 	 * @return JsonResponse
 	 */
-	public function update(Request $request, Article $article): JsonResponse
+	public function update(Request $request, Article $article): Response
 	{
 		$entityManager = $this->getDoctrine()->getManager();
-		$admin = $this->_findAdminOrFail($request);
 		$categoryRepository = $entityManager->getRepository(Category::class);
-		$category = $categoryRepository->findOrFail($request->request->get('category'));
+		$category = $request->request->get('category');
 		try {
+			$admin = $this->_findAdminOrFail($request);
+			$category = $categoryRepository->findOrFail($category);
 			$article->setCategory($category);
 			$article->setUser($admin);
 			$article->setTitle($request->request->get('title'));
@@ -95,7 +106,7 @@ class ArticleController extends AbstractController
 			$article->setStock($request->request->get('stock'));
 			self::_updateImages($article, $request->files->get('images'));
 		} catch (\Exception $e) {
-			throw new InvalidParameterException('', 400, $e);
+			return $this->json($e->getMessage(), $e->getCode());
 		}
 		$entityManager->persist($article);
 		$entityManager->flush();
@@ -113,6 +124,9 @@ class ArticleController extends AbstractController
 	private function _findAdminOrFail(Request $request): User
 	{
 		$token = $request->headers->get('token');
+		if (!$token) {
+			throw new UnauthorizedHttpException('Missing Token');
+		}
 		$user = $this->getDoctrine()
 			->getManager()
 			->getRepository(User::class)
