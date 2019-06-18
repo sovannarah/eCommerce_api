@@ -104,9 +104,9 @@ class Article implements \JsonSerializable
 	 * @return Article
 	 * @throws InvalidParameterException if $title is null
 	 */
-	public function setTitle(?$title): self
+	public function setTitle(?string $title): self
 	{
-		self::_assertNotNull('title', $title);
+		self::_assertString('title', $title);
 		$this->title = $title;
 
 		return $this;
@@ -122,9 +122,9 @@ class Article implements \JsonSerializable
 	 * @return Article
 	 * @throws InvalidParameterException if $description is null
 	 */
-	public function setDescription(?$description): self
+	public function setDescription(?string $description): self
 	{
-		self::_assertNotNull('description', $description);
+		self::_assertString('description', $description);
 		$this->description = $description;
 
 		return $this;
@@ -141,7 +141,7 @@ class Article implements \JsonSerializable
 	 * @return Article
 	 * @throws InvalidParameterException if $price is negative ot null
 	 */
-	public function setPrice(?$price): self
+	public function setPrice($price = null): self
 	{
 		self::_assertNotNegInt('price', $price);
 		$this->price = $price;
@@ -156,6 +156,9 @@ class Article implements \JsonSerializable
 
 	public function setImages($images = []): self
 	{
+		if (!is_array($images)) {
+			throw new InvalidParameterException('images must be an array');
+		}
 		$this->images = $images;
 
 		return $this;
@@ -185,10 +188,14 @@ class Article implements \JsonSerializable
 		return $this->nb_views ?? 0;
 	}
 
-	public function setNbViews($nb_views = 0): self
+	public function setNbViews($nb_views = null): self
 	{
-		self::_assertNotNegInt('nb_views', $nb_views);
-		$this->nb_views = $nb_views;
+		if ($nb_views === null) {
+			$nb_views = 0;
+		} else {
+			self::_assertNotNegInt('nb_views', $nb_views);
+		}
+		$this->nb_views = (int)$nb_views;
 
 		return $this;
 	}
@@ -208,11 +215,9 @@ class Article implements \JsonSerializable
 	 * @return Article
 	 * @throws InvalidParameterException if $stock is not null, or positive or zero int
 	 */
-	public function setStock(?$stock): self
+	public function setStock($stock = null): self
 	{
-		if ($stock !== null) {
-			self::_assertNotNegInt('stock', $stock);
-		}
+		self::_assertNotNegInt('stock', $stock, true);
 		$this->stock = $stock;
 
 		return $this;
@@ -246,28 +251,37 @@ class Article implements \JsonSerializable
 		];
 	}
 
-	private static function _rec_jsonSerializeCategory(Category $category = null): ?array
-	{
+	private static function _rec_jsonSerializeCategory(Category $category = null
+	): ?array {
 		return !$category ?
 			null :
 			[
 				'id' => $category->getId(),
 				'name' => $category->getName(),
-				'parent' => self::_rec_jsonSerializeCategory($category->getParent()),
+				'parent' => self::_rec_jsonSerializeCategory(
+					$category->getParent()
+				),
 			];
 	}
 
 	/**
-	 * @param int $val
-	 * @throws InvalidParameterException if $price < 0
+	 * @param string $fieldName
+	 * @param mixed $val
+	 * @param bool $allowNull
 	 */
-	private static function _assertNotNegInt(string $fieldName, $val): void
-	{
-		if (!is_int($val) || $val < 0) {
-			throw new InvalidParameterException(
-				$fieldName.' must be a positive or 0 int'
-			);
+	private static function _assertNotNegInt(
+		string $fieldName,
+		$val,
+		bool $allowNull = false
+	): void {
+		if (($allowNull && $val === null)
+			|| $val === 0
+			|| 0 < (int)$val) {
+			return;
 		}
+		throw new InvalidParameterException(
+			$fieldName.' must be a positive or 0 int'
+		);
 	}
 
 	private static function _assertNotNull(string $fieldName, $val): void
@@ -277,5 +291,19 @@ class Article implements \JsonSerializable
 				$fieldName.' must not be null'
 			);
 		}
+	}
+
+	private static function _assertString(
+		string $fieldName,
+		$val,
+		bool $allowEmpty = false,
+		bool $allowNull = true
+	): void {
+		if (($allowNull && $val === null)
+			|| ($allowEmpty && $val === '')
+			|| (is_string($val))) {
+			return;
+		}
+		throw new InvalidParameterException($fieldName.' invalid');
 	}
 }
