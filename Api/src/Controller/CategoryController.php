@@ -11,6 +11,7 @@ Doctrine\ORM\EntityManagerInterface,
 App\Entity\Category;
 
 use App\Repository\CategoryRepository;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * @Route("/category")
@@ -19,10 +20,10 @@ class CategoryController extends AbstractController
 {
 
 	/**
-	 * @Route("/", name="all_categories", methods={"GET"})
-	 * 
+	 * @Route("", name="all_categories", methods={"GET"})
+	 *
 	 * @param CategoryRepository $categories
-	 * @return json Name, id of all categoried and subcategories
+	 * @return JsonResponse Name, id of all categoried and subcategories
 	 */
 	public function		getCategories(CategoryRepository $categories)
 	{
@@ -41,10 +42,10 @@ class CategoryController extends AbstractController
 
 	/**
 	 * @Route("/{id}", name="category", methods={"GET"})
-	 * 
+	 *
 	 * @param CategoryRepository $categories
-	 * @param int|string         $id         Requested category
-	 * @return json requested category, parents names, subcategories and all articles of current and sub
+	 * @param int|string $id Requested category
+	 * @return JsonResponse requested category, parents names, subcategories and all articles of current and sub
 	 */
 	public function		getCategory(CategoryRepository $categories, $id)
 	{
@@ -64,7 +65,7 @@ class CategoryController extends AbstractController
 	}
 
 	/**
-	 * @Route("/", name="new_category", methods={"POST"})
+	 * @Route("", name="new_category", methods={"POST"})
 	 * 
 	 * @param Request $req
 	 * @param UserRepository $urep
@@ -73,7 +74,7 @@ class CategoryController extends AbstractController
 	 * @param EntityManagerInterface $manger
 	 * @param CategoryRepository $categories
 	 * 
-	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 * @return JsonResponse
 	 */
 	public function		addCategoty(
 		Request $req,
