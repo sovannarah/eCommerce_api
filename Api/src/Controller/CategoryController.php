@@ -96,7 +96,7 @@ class CategoryController extends AbstractController
 		if (!$admin) {
 			return $this->json('invalid/missing token', 401);
 		}
-		if ($this->_setParentOn($cat, $req->request->get('parentId'))) {
+		if (!$this->_setParentOn($cat, $req->request->get('parentId'))) {
 			return $this->json('Invalid Parent id', 400);
 		}
 		$name = $req->request->get('name');
