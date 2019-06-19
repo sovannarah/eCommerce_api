@@ -20,7 +20,7 @@ class CategoryController extends AbstractController
 {
 
 	/**
-	 * @Route("", name="all_categories", methods={"GET"})
+	 * @Route("", name="categories_all", methods={"GET"})
 	 *
 	 * @param CategoryRepository $categoryRepository
 	 * @return JsonResponse Name, id, and subcategories of all categories (recursively),
@@ -38,18 +38,28 @@ class CategoryController extends AbstractController
 	}
 
 	/**
-	 * @Route("/{id}", name="category", methods={"GET"})
+	 * @Route("/{id}", name="category_read", methods={"GET"})
 	 *
 	 * @param Category $cat
 	 * @return JsonResponse requested category, parents names, subcategories and all articles of current and sub
 	 */
-	public function getCategory(Category $cat): JsonResponse
+	public function read(Category $cat): JsonResponse
 	{
 		return $this->json($cat);
 	}
 
 	/**
-	 * @Route("", name="new_category", methods={"POST"})
+	 * @Route("/{id}/article", name="category_article_all")
+	 * @param Category $category
+	 * @return JsonResponse
+	 */
+	public function readNestedArticles(Category $category): JsonResponse
+	{
+		return $this->json($category->getArticles()->toArray());
+	}
+
+	/**
+	 * @Route("", name="category_create", methods={"POST"})
 	 *
 	 * @param Request $req
 	 * @param EntityManagerInterface $manger
@@ -60,7 +70,7 @@ class CategoryController extends AbstractController
 	}
 
 	/**
-	 * @Route("/upd/{id}", name="upd_category", methods={"POST"})
+	 * @Route("/{id}", name="category_upd", methods={"POST"})
 	 *
 	 * @param Category $cat ;
 	 * @param Request $req
