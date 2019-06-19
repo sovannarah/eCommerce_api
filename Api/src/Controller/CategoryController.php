@@ -75,7 +75,7 @@ class CategoryController extends AbstractController
 	 */
 	public function create(Request $req, EntityManagerInterface $manger): JsonResponse
 	{
-		return $this->update(new Category(), $req, $manger)->setStatusCode(201);
+		return $this->update(new Category(), $req, $manger)->setStatusCode(200);
 	}
 
 	/**
@@ -100,13 +100,13 @@ class CategoryController extends AbstractController
 			return $this->json('Invalid Parent id', 400);
 		}
 		$name = $req->request->get('name');
-		if ($name) {
-			$cat->setName($name);
+		if (!$name) {
+			return ($this->json('invalid name', 400));
 		}
+		$cat->setName($name);
 		$manger->persist($cat);
 		$manger->flush();
 		$manger->refresh($cat);
-
 		return $this->json($cat);
 	}
 
