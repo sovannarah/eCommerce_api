@@ -12,7 +12,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController,
 
 use App\Repository\CategoryRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Exception\InvalidParameterException;
 
 /**
  * @Route("/category")
@@ -75,7 +74,10 @@ class CategoryController extends AbstractController
 	 */
 	public function create(Request $req, EntityManagerInterface $manger): JsonResponse
 	{
-		return $this->update(new Category(), $req, $manger)->setStatusCode(200);
+		$res = $this->update(new Category(), $req, $manger);
+		if ($res->getStatusCode() === 200) {
+			return $res->setStatusCode(200);
+		}
 	}
 
 	/**
@@ -107,6 +109,7 @@ class CategoryController extends AbstractController
 		$manger->persist($cat);
 		$manger->flush();
 		$manger->refresh($cat);
+
 		return $this->json($cat);
 	}
 
@@ -123,6 +126,7 @@ class CategoryController extends AbstractController
 			}
 		}
 		$category->setParent($parent);
+
 		return true;
 	}
 

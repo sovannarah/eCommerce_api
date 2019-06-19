@@ -234,6 +234,7 @@ class Article implements \JsonSerializable
 		$simpleSerializable = $this->nestedJsonSerialize();
 		$simpleSerializable['category'] =
 			Category::rec_jsonSerializeParent($this->getCategory());
+
 		return $simpleSerializable;
 	}
 
@@ -258,6 +259,7 @@ class Article implements \JsonSerializable
 				$image->getFilename() :
 				$image;
 		}
+
 		return $imageNames;
 	}
 
