@@ -274,8 +274,8 @@ class Article implements \JsonSerializable
 		bool $allowNull = false
 	): void {
 		if (($allowNull && $val === null)
-			|| $val === 0
-			|| 0 < (int)$val) {
+			|| is_int($val) && $val >= 0
+			|| ctype_digit($val)) {
 			return;
 		}
 		throw new InvalidParameterException(
