@@ -112,7 +112,7 @@ class CategoryController extends AbstractController
 
 	private function _setParentOn(Category $category, $parentId): bool
 	{
-		if ($parentId === null) {
+		if ($parentId === null || $parentId === '') {
 			$parent = null;
 		} else {
 			$parent = $this->getDoctrine()->getManager()
