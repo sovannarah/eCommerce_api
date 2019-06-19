@@ -148,13 +148,9 @@ class Category implements \JsonSerializable
 	 */
 	public function jsonSerialize()
 	{
-		$serializableArticles = [];
-		/** @var Article $article */
-		foreach ($this->articles as $article) {
-			$serializableArticles[] = $article->nestedJsonSerialize();
-		}
-
 		return [
+			'id' => $this->getId(),
+			'name' => $this->getName(),
 			'children' => $this->_jsonSerializeChildren(),
 			'parent' => self::rec_jsonSerializeParent($this->getParent()),
 		];
