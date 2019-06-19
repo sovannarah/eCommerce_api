@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Article;
 use App\Entity\User;
-use FOS\RestBundle\Exception\InvalidParameterException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController,
 	Symfony\Component\Routing\Annotation\Route,
 	Symfony\Component\HttpFoundation\Request,
@@ -13,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController,
 
 use App\Repository\CategoryRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 
 /**
  * @Route("/category")
@@ -91,12 +91,14 @@ class CategoryController extends AbstractController
 		Request $req,
 		EntityManagerInterface $manger
 	): JsonResponse {
-		$token = $req->headers->get('token');
-		$admin = $manger->getRepository(User::class)->findAdminByToken($token);
+		$admin = $manger->getRepository(User::class)
+			->findAdminByToken($req->headers->get('token'));
 		if (!$admin) {
 			return $this->json('invalid/missing token', 401);
 		}
-		$this->_setParent($cat, $req->request->get('parentId'));
+		if ($this->_setParentOn($cat, $req->request->get('parentId'))) {
+			return $this->json('Invalid Parent id', 400);
+		}
 		$name = $req->request->get('name');
 		if ($name) {
 			$cat->setName($name);
@@ -108,15 +110,20 @@ class CategoryController extends AbstractController
 		return $this->json($cat);
 	}
 
-	private function _setParent(Category $category, $parentId): void
+	private function _setParentOn(Category $category, $parentId): bool
 	{
-		$parent = $this->getDoctrine()->getManager()
-			->getRepository(Category::class)
-			->find($parentId);
-		if ($parentId !== null && !$parent) {
-			throw new InvalidParameterException("No parent found with id: $parentId");
+		if ($parentId === null) {
+			$parent = null;
+		} else {
+			$parent = $this->getDoctrine()->getManager()
+				->getRepository(Category::class)
+				->find($parentId);
+			if (!$parent) {
+				return false;
+			}
 		}
 		$category->setParent($parent);
+		return true;
 	}
 
 	/**
