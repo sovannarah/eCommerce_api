@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use http\Exception\InvalidArgumentException;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -232,6 +231,14 @@ class Article implements \JsonSerializable
 	 */
 	public function jsonSerialize()
 	{
+		$simpleSerializable = $this->_jsonSerializeImages();
+		$simpleSerializable['category'] =
+			Category::rec_jsonSerializeParent($this->getCategory());
+		return $simpleSerializable;
+	}
+
+	public function nestedJsonSerialize(): array
+	{
 		return [
 			'id' => $this->getId(),
 			'title' => $this->getTitle(),
@@ -239,29 +246,19 @@ class Article implements \JsonSerializable
 			'price' => $this->getPrice(),
 			'nb_views' => $this->getNbViews(),
 			'stock' => $this->getStock(),
-			'images' => array_map(
-				static function ($image) {
-					return ($image instanceof \SplFileInfo) ?
-						$image->getFilename() :
-						$image;
-				},
-				$this->getImages()
-			),
-			'category' => self::_rec_jsonSerializeCategory($this->getCategory()),
+			'images' => $this->_jsonSerializeImages(),
 		];
 	}
 
-	private static function _rec_jsonSerializeCategory(Category $category = null
-	): ?array {
-		return !$category ?
-			null :
-			[
-				'id' => $category->getId(),
-				'name' => $category->getName(),
-				'parent' => self::_rec_jsonSerializeCategory(
-					$category->getParent()
-				),
-			];
+	private function _jsonSerializeImages(): array
+	{
+		$imageNames = [];
+		foreach ($this->getImages() as $image) {
+			$imageNames[] = ($image instanceof \SplFileInfo) ?
+				$image->getFilename() :
+				$image;
+		}
+		return $imageNames;
 	}
 
 	/**
@@ -301,7 +298,7 @@ class Article implements \JsonSerializable
 	): void {
 		if (($allowNull && $val === null)
 			|| ($allowEmpty && $val === '')
-			|| (is_string($val))) {
+			|| is_string($val)) {
 			return;
 		}
 		throw new InvalidParameterException($fieldName.' invalid');
