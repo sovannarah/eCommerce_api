@@ -231,7 +231,7 @@ class Article implements \JsonSerializable
 	 */
 	public function jsonSerialize()
 	{
-		$simpleSerializable = $this->_jsonSerializeImages();
+		$simpleSerializable = $this->nestedJsonSerialize();
 		$simpleSerializable['category'] =
 			Category::rec_jsonSerializeParent($this->getCategory());
 		return $simpleSerializable;

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Article;
 use App\Entity\User;
 use FOS\RestBundle\Exception\InvalidParameterException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController,
@@ -55,7 +56,14 @@ class CategoryController extends AbstractController
 	 */
 	public function readNestedArticles(Category $category): JsonResponse
 	{
-		return $this->json($category->getArticles()->toArray());
+		return $this->json(
+			$category->getArticles()->map(
+				static function (Article $article) {
+					return $article->nestedJsonSerialize();
+				}
+			)
+				->toArray()
+		);
 	}
 
 	/**
@@ -65,7 +73,8 @@ class CategoryController extends AbstractController
 	 * @param EntityManagerInterface $manger
 	 * @return JsonResponse
 	 */
-	public function create(Request $req, EntityManagerInterface $manger): JsonResponse {
+	public function create(Request $req, EntityManagerInterface $manger): JsonResponse
+	{
 		return $this->update(new Category(), $req, $manger)->setStatusCode(201);
 	}
 
