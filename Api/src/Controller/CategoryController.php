@@ -103,7 +103,7 @@ class CategoryController extends AbstractController
 		}
 		$name = $req->request->get('name');
 		if (!$name) {
-			return ($this->json('invalid name', 400));
+			return $this->json('invalid name', 400);
 		}
 		$cat->setName($name);
 		$manger->persist($cat);

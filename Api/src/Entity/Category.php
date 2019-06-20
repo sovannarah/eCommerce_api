@@ -135,6 +135,19 @@ class Category implements \JsonSerializable
 		return $this;
 	}
 
+	public function isDeepParentOf(Category $child): bool
+	{
+		if ($this->getChildren()->isEmpty()) {
+			return false;
+		}
+		while($child = $child->getParent()) {
+			if ($this->id === $child->getId()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Specify data which should be serialized to JSON
 	 * @link https://php.net/manual/en/jsonserializable.jsonserialize.php

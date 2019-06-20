@@ -214,8 +214,9 @@ class Article implements \JsonSerializable
 	 * @return Article
 	 * @throws InvalidParameterException if $stock is not null, or positive or zero int
 	 */
-	public function setStock($stock = null): self
+	public function setStock($stock): self
 	{
+		$stock = $stock !== '' ? $stock : null;
 		self::_assertNotNegInt('stock', $stock, true);
 		$this->stock = $stock;
 
@@ -274,8 +275,9 @@ class Article implements \JsonSerializable
 		bool $allowNull = false
 	): void {
 		if (($allowNull && $val === null)
-			|| is_int($val) && $val >= 0
-			|| ctype_digit($val)) {
+			|| (is_int($val) && $val >= 0)
+			|| ctype_digit($val)
+		) {
 			return;
 		}
 		throw new InvalidParameterException(
