@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\{File\UploadedFile,
 	Response};
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -90,7 +90,7 @@ class ArticleController extends AbstractController
 		try {
 			$this->_findAdminOrFail($request);
 		} catch (\Exception $e) {
-			$statusCode = $e instanceof HttpException ? $e->getStatusCode() : 400;
+			$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
 
 			return $this->json($e->getMessage(), $statusCode);
 		}
@@ -124,7 +124,7 @@ class ArticleController extends AbstractController
 			$article->setStock($request->request->get('stock'));
 			self::_updateImages($article, $request->files->get('images'));
 		} catch (\Exception $e) {
-			$statusCode = $e instanceof HttpException ? $e->getStatusCode() : 400;
+			$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
 
 			return $this->json($e->getMessage(), $statusCode);
 		}

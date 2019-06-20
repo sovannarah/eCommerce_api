@@ -12,6 +12,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController,
 
 use App\Repository\CategoryRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 
 /**
  * @Route("/category")
@@ -98,8 +101,11 @@ class CategoryController extends AbstractController
 		if (!$admin) {
 			return $this->json('invalid/missing token', 401);
 		}
-		if (!$this->_setParentOn($cat, $req->request->get('parentId'))) {
-			return $this->json('Invalid Parent id', 400);
+		try {
+			$this->_setParentOn($cat, $req->request->get('parentId'));
+		} catch (InvalidParameterException | NotFoundHttpException $e) {
+			$status = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
+			return $this->json($e->getMessage(), $status);
 		}
 		$name = $req->request->get('name');
 		if (!$name) {
@@ -113,21 +119,31 @@ class CategoryController extends AbstractController
 		return $this->json($cat);
 	}
 
-	private function _setParentOn(Category $category, $parentId): bool
+	/**
+	 * @param Category $category
+	 * @param $parentId
+	 * @throws InvalidParameterException | NotFoundHttpException
+	 */
+	private function _setParentOn(Category $category, $parentId): void
 	{
 		if ($parentId === null || $parentId === '') {
-			$parent = null;
-		} else {
-			$parent = $this->getDoctrine()->getManager()
-				->getRepository(Category::class)
-				->find($parentId);
-			if (!$parent) {
-				return false;
-			}
+			$category->setParent(null);
+
+			return;
+		}
+		if ($category->getId() === $parentId) {
+			throw new InvalidParameterException('Parent Category cannot be self');
+		}
+		$parent = $this->getDoctrine()->getManager()
+			->getRepository(Category::class)
+			->find($parentId);
+		if (!$parent) {
+			throw new NotFoundHttpException("No Category with id: $parentId");
+		}
+		if ($category->isDeepParentOf($parent)) {
+			throw new InvalidParameterException('Circular hierarchy: parent category is a child');
 		}
 		$category->setParent($parent);
-
-		return true;
 	}
 
 	/**
