@@ -93,6 +93,7 @@ class CategoryController extends AbstractController
 		if ($res->getStatusCode() === 200) {
 			return $res->setStatusCode(200);
 		}
+		return $res;
 	}
 
 	/**
