@@ -9,16 +9,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SearchController extends AbstractController
 {
-	public function index()
-	{
-		return $this->json([
-			'message' => 'Welcome to your new controller!',
-			'path' => 'src/Controller/SearchController.php',
-		]);
-	}
 
 	/**
-	 * @Route("/search", name="search", methods={GET})
+	 * @Route("/search", name="search", methods={"GET"})
 	 */
 	public function     Search(Request $request, ArticleRepository $tArticle)
 	{
