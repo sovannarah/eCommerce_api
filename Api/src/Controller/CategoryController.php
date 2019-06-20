@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Article;
 use App\Entity\User;
+use App\Repository\ArticleRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController,
 	Symfony\Component\Routing\Annotation\Route,
 	Symfony\Component\HttpFoundation\Request,
@@ -52,19 +53,30 @@ class CategoryController extends AbstractController
 	}
 
 	/**
+	 * @Route("/all/{id}", name="get_all_child_cate", methods={"GET"})
+	 */
+	public function     getChild()
+	{
+
+	}
+
+	/**
 	 * @Route("/{id}/article", name="category_article_all")
 	 * @param Category $category
 	 * @return JsonResponse
 	 */
-	public function readNestedArticles(Category $category): JsonResponse
+	public function readNestedArticles(Category $category, ArticleRepository $articles): JsonResponse
 	{
+
+		$categoryIds= [];
+		$category->getDeepChildrenId($categoryIds);
+		$articles->findBy(['category_id' => $categoryIds]);
 		return $this->json(
 			$category->getArticles()->map(
 				static function (Article $article) {
 					return $article->nestedJsonSerialize();
 				}
-			)
-				->toArray()
+			)->toArray()
 		);
 	}
 

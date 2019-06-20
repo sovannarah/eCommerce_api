@@ -202,6 +202,15 @@ class Category implements \JsonSerializable
 		];
 	}
 
+	public function     getDeepChildrenId(&$tChildIds)
+	{
+		$tChildsId[] = $this->getId();
+		$children = $this->getChildren();
+		$c = -1;
+		$lenchild = $children->count();
+		while (++$c < $lenchild)
+			$children[$c]->getDeepChildrenId($tChildIds);
+	}
 
 	/**
 	 * Recursively converts given parent category to json serializable data,
