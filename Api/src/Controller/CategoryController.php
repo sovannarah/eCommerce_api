@@ -63,14 +63,14 @@ class CategoryController extends AbstractController
 	/**
 	 * @Route("/{id}/article", name="category_article_all")
 	 * @param Category $category
+	 * @param ArticleRepository $articles
 	 * @return JsonResponse
 	 */
 	public function readNestedArticles(Category $category, ArticleRepository $articles): JsonResponse
 	{
-
 		$categoryIds= [];
 		$category->getDeepChildrenId($categoryIds);
-		$articles->findBy(['category_id' => $categoryIds]);
+		$articles->findBy(['category' => $categoryIds]);
 		return $this->json(
 			$category->getArticles()->map(
 				static function (Article $article) {
