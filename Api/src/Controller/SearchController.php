@@ -18,7 +18,7 @@ class SearchController extends AbstractController
 	}
 
 	/**
-	 * @Route("/search", name="search")
+	 * @Route("/search", name="search", methods={GET})
 	 */
 	public function     Search(Request $request, ArticleRepository $tArticle)
 	{
@@ -54,7 +54,6 @@ class SearchController extends AbstractController
 		$lentQ = count($tQuery);
 		foreach ($tval as $keys => $val)
 		{
-			echo ("</br>");
 			if ($keys === 'category' . $n)
 			{
 				$tValCate[$n] = $val;
