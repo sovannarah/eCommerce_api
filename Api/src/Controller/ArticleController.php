@@ -32,7 +32,7 @@ class ArticleController extends AbstractController
 	 */
 	public function index(ArticleRepository $articleRepository): Response
 	{
-		return $this->json($articleRepository->findAll());
+		return $this->json($articleRepository->findBy([],['nb_views' => 'DESC']));
 	}
 
 	/**
@@ -154,7 +154,6 @@ class ArticleController extends AbstractController
 		if (!$user) {
 			throw new AccessDeniedHttpException();
 		}
-
 		return $user;
 	}
 
