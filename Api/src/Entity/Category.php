@@ -202,9 +202,9 @@ class Category implements \JsonSerializable
 		];
 	}
 
-	public function     getDeepChildrenId(&$tChildIds)
+	public function     getDeepChildrenId(array &$tChildIds)
 	{
-		$tChildsId[] = $this->getId();
+		$tChildIds[] = $this->getId();
 		$children = $this->getChildren();
 		$c = -1;
 		$lenchild = $children->count();

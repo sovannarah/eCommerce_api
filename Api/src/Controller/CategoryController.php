@@ -53,14 +53,6 @@ class CategoryController extends AbstractController
 	}
 
 	/**
-	 * @Route("/all/{id}", name="get_all_child_cate", methods={"GET"})
-	 */
-	public function     getChild()
-	{
-
-	}
-
-	/**
 	 * @Route("/{id}/article", name="category_article_all")
 	 * @param Category $category
 	 * @param ArticleRepository $articles
