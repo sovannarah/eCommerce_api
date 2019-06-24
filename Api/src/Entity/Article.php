@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Routing\Exception\InvalidParameterException;
@@ -69,6 +71,21 @@ class Article implements \JsonSerializable
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
 	private $stock;
+
+	/**
+	 * @ORM\ManyToMany(targetEntity="App\Entity\StockOrder", inversedBy="detail")
+	 */
+	private $stockOrder;
+
+	/**
+	 * @ORM\OneToMany(targetEntity="App\Entity\OrderItems", mappedBy="article")
+	 */
+	private $orderItems;
+
+	public function __construct()
+	{
+		$this->orderItems = new ArrayCollection();
+	}
 
 	public function getId(): ?int
 	{
@@ -306,5 +323,48 @@ class Article implements \JsonSerializable
 			return;
 		}
 		throw new InvalidParameterException($fieldName.' invalid');
+	}
+
+	public function getStockOrder(): ?StockOrder
+	{
+		return $this->stockOrder;
+	}
+
+	public function setStockOrder(?StockOrder $stockOrder): self
+	{
+		$this->stockOrder = $stockOrder;
+
+		return $this;
+	}
+
+	/**
+	 * @return Collection|OrderItems[]
+	 */
+	public function getOrderItems(): Collection
+	{
+		return $this->orderItems;
+	}
+
+	public function addOrderItem(OrderItems $orderItem): self
+	{
+		if (!$this->orderItems->contains($orderItem)) {
+			$this->orderItems[] = $orderItem;
+			$orderItem->setArticle($this);
+		}
+
+		return $this;
+	}
+
+	public function removeOrderItem(OrderItems $orderItem): self
+	{
+		if ($this->orderItems->contains($orderItem)) {
+			$this->orderItems->removeElement($orderItem);
+			// set the owning side to null (unless already changed)
+			if ($orderItem->getArticle() === $this) {
+				$orderItem->setArticle(null);
+			}
+		}
+
+		return $this;
 	}
 }
