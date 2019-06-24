@@ -19,11 +19,6 @@ class StockOrder
     private $id;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Article", mappedBy="stockOrder")
-     */
-    private $detail;
-
-    /**
      * @ORM\Column(type="datetime")
      */
     private $Send;
@@ -38,45 +33,19 @@ class StockOrder
      */
     private $status;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\OrderItems", mappedBy="orders", cascade={"persist"})
+     */
+    private $orderItems;
+
     public function __construct()
     {
-        $this->detail = new ArrayCollection();
+        $this->orderItems = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    /**
-     * @return Collection|Article[]
-     */
-    public function getDetail(): Collection
-    {
-        return $this->detail;
-    }
-
-    public function addDetail(Article $detail): self
-    {
-        if (!$this->detail->contains($detail)) {
-            $this->detail[] = $detail;
-            $detail->setStockOrder($this);
-        }
-
-        return $this;
-    }
-
-    public function removeDetail(Article $detail): self
-    {
-        if ($this->detail->contains($detail)) {
-            $this->detail->removeElement($detail);
-            // set the owning side to null (unless already changed)
-            if ($detail->getStockOrder() === $this) {
-                $detail->setStockOrder(null);
-            }
-        }
-
-        return $this;
     }
 
     public function getSend(): ?\DateTimeInterface
@@ -114,4 +83,36 @@ class StockOrder
 
         return $this;
     }
+
+    /**
+     * @return Collection|OrderItems[]
+     */
+    public function getOrderItems(): Collection
+    {
+        return $this->orderItems;
+    }
+
+    public function addOrderItem(OrderItems $orderItem): self
+    {
+        if (!$this->orderItems->contains($orderItem)) {
+            $this->orderItems[] = $orderItem;
+            $orderItem->setOrders($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrderItem(OrderItems $orderItem): self
+    {
+        if ($this->orderItems->contains($orderItem)) {
+            $this->orderItems->removeElement($orderItem);
+            // set the owning side to null (unless already changed)
+            if ($orderItem->getOrders() === $this) {
+                $orderItem->setOrders(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

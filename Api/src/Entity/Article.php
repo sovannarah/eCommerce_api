@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Routing\Exception\InvalidParameterException;
@@ -70,20 +72,30 @@ class Article implements \JsonSerializable
 	 */
 	private $stock;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\StockOrder", inversedBy="detail")
-     */
-    private $stockOrder;
+	/**
+	 * @ORM\ManyToMany(targetEntity="App\Entity\StockOrder", inversedBy="detail")
+	 */
+	private $stockOrder;
+
+	/**
+	 * @ORM\OneToMany(targetEntity="App\Entity\OrderItems", mappedBy="article")
+	 */
+	private $orderItems;
+
+	public function __construct()
+	{
+		$this->orderItems = new ArrayCollection();
+	}
 
 	public function getId(): ?int
-         	{
-         		return $this->id;
-         	}
+	{
+		return $this->id;
+	}
 
 	public function getUser(): ?User
-         	{
-         		return $this->user;
-         	}
+	{
+		return $this->user;
+	}
 
 	/**
 	 * @param User|null $user
@@ -91,17 +103,17 @@ class Article implements \JsonSerializable
 	 * @throws InvalidParameterException if $user is null
 	 */
 	public function setUser(?User $user): self
-         	{
-         		self::_assertNotNull('user', $user);
-         		$this->user = $user;
-         
-         		return $this;
-         	}
+	{
+		self::_assertNotNull('user', $user);
+		$this->user = $user;
+
+		return $this;
+	}
 
 	public function getTitle(): ?string
-         	{
-         		return $this->title;
-         	}
+	{
+		return $this->title;
+	}
 
 	/**
 	 * @param string|null $title
@@ -109,17 +121,17 @@ class Article implements \JsonSerializable
 	 * @throws InvalidParameterException if $title is null
 	 */
 	public function setTitle(?string $title): self
-         	{
-         		self::_assertString('title', $title);
-         		$this->title = $title;
-         
-         		return $this;
-         	}
+	{
+		self::_assertString('title', $title);
+		$this->title = $title;
+
+		return $this;
+	}
 
 	public function getDescription(): ?string
-         	{
-         		return $this->description;
-         	}
+	{
+		return $this->description;
+	}
 
 	/**
 	 * @param string|null $description
@@ -127,17 +139,17 @@ class Article implements \JsonSerializable
 	 * @throws InvalidParameterException if $description is null
 	 */
 	public function setDescription(?string $description): self
-         	{
-         		self::_assertString('description', $description);
-         		$this->description = $description;
-         
-         		return $this;
-         	}
+	{
+		self::_assertString('description', $description);
+		$this->description = $description;
+
+		return $this;
+	}
 
 	public function getPrice(): ?int
-         	{
-         		return $this->price;
-         	}
+	{
+		return $this->price;
+	}
 
 	/**
 	 * @Assert\PositiveOrZero
@@ -146,33 +158,33 @@ class Article implements \JsonSerializable
 	 * @throws InvalidParameterException if $price is negative ot null
 	 */
 	public function setPrice($price = null): self
-         	{
-         		self::_assertNotNegInt('price', $price);
-         		$this->price = $price;
-         
-         		return $this;
-         	}
+	{
+		self::_assertNotNegInt('price', $price);
+		$this->price = $price;
+
+		return $this;
+	}
 
 	public function getImages(): array
-         	{
-         		return $this->images ?? [];
-         	}
+	{
+		return $this->images ?? [];
+	}
 
 	public function setImages($images = []): self
-         	{
-         		if (!is_array($images)) {
-         			throw new InvalidParameterException('images must be an array');
-         		}
-         		$this->images = $images;
-         
-         		return $this;
-         	}
+	{
+		if (!is_array($images)) {
+			throw new InvalidParameterException('images must be an array');
+		}
+		$this->images = $images;
+
+		return $this;
+	}
 
 
 	public function getCategory(): ?Category
-         	{
-         		return $this->category;
-         	}
+	{
+		return $this->category;
+	}
 
 	/**
 	 * @param Category|null $category
@@ -180,39 +192,39 @@ class Article implements \JsonSerializable
 	 * @throws InvalidParameterException if $category is null
 	 */
 	public function setCategory(?Category $category): self
-         	{
-         		self::_assertNotNull('category', $category);
-         		$this->category = $category;
-         
-         		return $this;
-         	}
+	{
+		self::_assertNotNull('category', $category);
+		$this->category = $category;
+
+		return $this;
+	}
 
 	public function getNbViews(): int
-         	{
-         		return $this->nb_views ?? 0;
-         	}
+	{
+		return $this->nb_views ?? 0;
+	}
 
 	public function setNbViews($nb_views = null): self
-         	{
-         		if ($nb_views === null) {
-         			$nb_views = 0;
-         		} else {
-         			self::_assertNotNegInt('nb_views', $nb_views);
-         		}
-         		$this->nb_views = (int)$nb_views;
-         
-         		return $this;
-         	}
+	{
+		if ($nb_views === null) {
+			$nb_views = 0;
+		} else {
+			self::_assertNotNegInt('nb_views', $nb_views);
+		}
+		$this->nb_views = (int)$nb_views;
+
+		return $this;
+	}
 
 	public function incrementNbViews(): self
-         	{
-         		return $this->setNbViews($this->getNbViews() + 1);
-         	}
+	{
+		return $this->setNbViews($this->getNbViews() + 1);
+	}
 
 	public function getStock(): ?int
-         	{
-         		return $this->stock;
-         	}
+	{
+		return $this->stock;
+	}
 
 	/**
 	 * @param int|null $stock
@@ -220,13 +232,13 @@ class Article implements \JsonSerializable
 	 * @throws InvalidParameterException if $stock is not null, or positive or zero int
 	 */
 	public function setStock($stock): self
-         	{
-         		$stock = $stock !== '' ? $stock : null;
-         		self::_assertNotNegInt('stock', $stock, true);
-         		$this->stock = $stock;
-         
-         		return $this;
-         	}
+	{
+		$stock = $stock !== '' ? $stock : null;
+		self::_assertNotNegInt('stock', $stock, true);
+		$this->stock = $stock;
+
+		return $this;
+	}
 
 	/**
 	 * Specify data which should be serialized to JSON
@@ -236,38 +248,38 @@ class Article implements \JsonSerializable
 	 * @since 5.4.0
 	 */
 	public function jsonSerialize()
-         	{
-         		$simpleSerializable = $this->nestedJsonSerialize();
-         		$simpleSerializable['category'] =
-         			Category::rec_jsonSerializeParent($this->getCategory());
-         
-         		return $simpleSerializable;
-         	}
+	{
+		$simpleSerializable = $this->nestedJsonSerialize();
+		$simpleSerializable['category'] =
+			Category::rec_jsonSerializeParent($this->getCategory());
+
+		return $simpleSerializable;
+	}
 
 	public function nestedJsonSerialize(): array
-         	{
-         		return [
-         			'id' => $this->getId(),
-         			'title' => $this->getTitle(),
-         			'description' => $this->getDescription(),
-         			'price' => $this->getPrice(),
-         			'nb_views' => $this->getNbViews(),
-         			'stock' => $this->getStock(),
-         			'images' => $this->_jsonSerializeImages(),
-         		];
-         	}
+	{
+		return [
+			'id' => $this->getId(),
+			'title' => $this->getTitle(),
+			'description' => $this->getDescription(),
+			'price' => $this->getPrice(),
+			'nb_views' => $this->getNbViews(),
+			'stock' => $this->getStock(),
+			'images' => $this->_jsonSerializeImages(),
+		];
+	}
 
 	private function _jsonSerializeImages(): array
-         	{
-         		$imageNames = [];
-         		foreach ($this->getImages() as $image) {
-         			$imageNames[] = ($image instanceof \SplFileInfo) ?
-         				$image->getFilename() :
-         				$image;
-         		}
-         
-         		return $imageNames;
-         	}
+	{
+		$imageNames = [];
+		foreach ($this->getImages() as $image) {
+			$imageNames[] = ($image instanceof \SplFileInfo) ?
+				$image->getFilename() :
+				$image;
+		}
+
+		return $imageNames;
+	}
 
 	/**
 	 * @param string $fieldName
@@ -275,53 +287,84 @@ class Article implements \JsonSerializable
 	 * @param bool $allowNull
 	 */
 	private static function _assertNotNegInt(
-         		string $fieldName,
-         		$val,
-         		bool $allowNull = false
-         	): void {
-         		if (($allowNull && $val === null)
-         			|| (is_int($val) && $val >= 0)
-         			|| ctype_digit($val)
-         		) {
-         			return;
-         		}
-         		throw new InvalidParameterException(
-         			$fieldName.' must be a positive or 0 int'
-         		);
-         	}
+		string $fieldName,
+		$val,
+		bool $allowNull = false
+	): void {
+		if (($allowNull && $val === null)
+			|| (is_int($val) && $val >= 0)
+			|| ctype_digit($val)
+		) {
+			return;
+		}
+		throw new InvalidParameterException(
+			$fieldName.' must be a positive or 0 int'
+		);
+	}
 
 	private static function _assertNotNull(string $fieldName, $val): void
-         	{
-         		if ($val === null) {
-         			throw new InvalidParameterException(
-         				$fieldName.' must not be null'
-         			);
-         		}
-         	}
+	{
+		if ($val === null) {
+			throw new InvalidParameterException(
+				$fieldName.' must not be null'
+			);
+		}
+	}
 
 	private static function _assertString(
-         		string $fieldName,
-         		$val,
-         		bool $allowEmpty = false,
-         		bool $allowNull = true
-         	): void {
-         		if (($allowNull && $val === null)
-         			|| ($allowEmpty && $val === '')
-         			|| is_string($val)) {
-         			return;
-         		}
-         		throw new InvalidParameterException($fieldName.' invalid');
-         	}
+		string $fieldName,
+		$val,
+		bool $allowEmpty = false,
+		bool $allowNull = true
+	): void {
+		if (($allowNull && $val === null)
+			|| ($allowEmpty && $val === '')
+			|| is_string($val)) {
+			return;
+		}
+		throw new InvalidParameterException($fieldName.' invalid');
+	}
 
-    public function getStockOrder(): ?StockOrder
-    {
-        return $this->stockOrder;
-    }
+	public function getStockOrder(): ?StockOrder
+	{
+		return $this->stockOrder;
+	}
 
-    public function setStockOrder(?StockOrder $stockOrder): self
-    {
-        $this->stockOrder = $stockOrder;
+	public function setStockOrder(?StockOrder $stockOrder): self
+	{
+		$this->stockOrder = $stockOrder;
 
-        return $this;
-    }
+		return $this;
+	}
+
+	/**
+	 * @return Collection|OrderItems[]
+	 */
+	public function getOrderItems(): Collection
+	{
+		return $this->orderItems;
+	}
+
+	public function addOrderItem(OrderItems $orderItem): self
+	{
+		if (!$this->orderItems->contains($orderItem)) {
+			$this->orderItems[] = $orderItem;
+			$orderItem->setArticle($this);
+		}
+
+		return $this;
+	}
+
+	public function removeOrderItem(OrderItems $orderItem): self
+	{
+		if ($this->orderItems->contains($orderItem)) {
+			$this->orderItems->removeElement($orderItem);
+			// set the owning side to null (unless already changed)
+			if ($orderItem->getArticle() === $this) {
+				$orderItem->setArticle(null);
+			}
+		}
+
+		return $this;
+	}
 }

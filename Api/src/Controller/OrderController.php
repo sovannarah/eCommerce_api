@@ -3,35 +3,47 @@
 namespace App\Controller;
 
 use App\Entity\StockOrder;
-use App\Repository\ArticleRepository;
-use FOS\RestBundle\Controller\Annotations as Rest;
+use App\Entity\OrderItems;
 use App\Entity\User;
+use App\Repository\ArticleRepository;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Symfony\Component\Routing\Annotation\Route;
-use Doctrine\ORM\EntityManager;
 
 /**
  * Class OrderController
  * @package App\Controller
- * @Rest\Route("/order")
+ * @Route("/order")
  */
 class OrderController extends AbstractController
 {
+
+	public function     getOrders()
+	{
+
+	}
 	/**
-	 * @Rest\Route ("", name="addOrder", methods={"POST"})
+	 * @Route ("", name="addOrder", methods={"POST"})
 	 */
 	public function addOrder(Request $request, ArticleRepository $rArticle)
 	{
 		try
 		{
 			$this->_findAdminOrFail($request);
-			$date = new \DateTime('now');
-			$nOrder = new StockOrder();
-			if (($article = $this->engineRequest($rArticle, $request->request->get('articles'))) === false)
-				return ($this->json(["error" => "bad request"], 404));
+			$manager = $this->getDoctrine()->getManager();
+			$ordersItem = $this->engineRequest($rArticle,
+				$request->request->get('articles'));
+			if ($ordersItem === false)
+				return ($this->json(['error' => 'bad Request'], 403));
+			else
+			{
+				$manager->persist($ordersItem);
+				$manager->flush();
+//				$manager->refresh($ordersItem);
+				return($this->json($ordersItem, 200));
+			}
 		}catch (\Exception $e)
 		{
 			if ($e instanceof HttpExceptionInterface)
@@ -41,22 +53,34 @@ class OrderController extends AbstractController
 			return $this->json($e->getMessage(), $statusCode);
 		}
 	}
+
+	/**
+	 * @param $rArticle
+	 * @param $table
+	 * @return StockOrder|bool
+	 * @throws \Exception
+	 */
 	private function    engineRequest($rArticle, $table)
 	{
 		$c = -1;
 		$ltable = count($table);
-		$tArticles = [];
+		$date = new \DateTime('now');
+			$order = new StockOrder();
+			$order->setStatus(false);
+			$order->setSend($date);
 		while (++$c < $ltable)
 		{
+			if (!isset($table[$c]['id']) || !isset($table[$c]['number']))
+				return (false);
 			$article = $rArticle->find($table[$c]['id']);
 			if (!$article)
 				return (false);
-			$tArticles[] = $article;
+			$item = new OrderItems();
+			$item->setArticle($article);
+			$item->setQuantity((int) $table[$c]['number']);
+			$order->getOrderItems()->add($item);
 		}
-		var_dump($tArticles);
-		if (empty($tArticles))
-			return (false);
-		return ($tArticles);
+		return ($order);
 	}
 
 	/**
