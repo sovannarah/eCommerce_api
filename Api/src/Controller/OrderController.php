@@ -5,8 +5,8 @@ namespace App\Controller;
 use App\Entity\{StockOrder, OrderItems, User};
 use App\Repository\ArticleRepository;
 use App\Repository\StockOrderRepository;
+use function PHPSTORM_META\type;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  * @package App\Controller
  * @Route("/order")
  */
-class OrderController extends AbstractController
+class OrderController extends CheckUserAbsController
 {
 
 	/**
@@ -25,7 +25,7 @@ class OrderController extends AbstractController
 	 */
 	public function     getOrders(StockOrderRepository $order)
 	{
-		return($this->json($order->findBy([], ['send' => 'DESC'])));
+		return($this->json($order->findBy([], ['send' => 'DESC']),200));
 	}
 
 	/**
@@ -46,7 +46,9 @@ class OrderController extends AbstractController
 	{
 		try
 		{
-			$this->_findAdminOrFail($request);
+			$user = $this->isAdmin($request);
+			if (is_array($user))
+				return ($user[0]);
 			$manager = $this->getDoctrine()->getManager();
 			$ordersItem = $this->engineRequest($rArticle,
 				$request->request->get('articles'));
@@ -78,10 +80,10 @@ class OrderController extends AbstractController
 	{
 		$c = -1;
 		$ltable = count($table);
-		$date = new \DateTime('now');
-			$order = new StockOrder();
-			$order->setStatus(false);
-			$order->setSend($date);
+		$date = new \DateTime('Europe/Paris');
+		$order = new StockOrder();
+		$order->setStatus(false);
+		$order->setSend($date);
 		while (++$c < $ltable)
 		{
 			if (!isset($table[$c]['id']) || !isset($table[$c]['number']))

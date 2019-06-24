@@ -21,7 +21,7 @@ class StockOrder
     /**
      * @ORM\Column(type="datetime")
      */
-    private $Send;
+    private $send;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
@@ -50,12 +50,12 @@ class StockOrder
 
     public function getSend(): ?\DateTimeInterface
     {
-        return $this->Send;
+        return $this->send;
     }
 
-    public function setSend(\DateTimeInterface $Send): self
+    public function setSend(\DateTimeInterface $send): self
     {
-        $this->Send = $Send;
+        $this->send = $send;
 
         return $this;
     }
