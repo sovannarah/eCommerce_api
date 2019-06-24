@@ -12,11 +12,14 @@ class SearchController extends AbstractController
 
 	/**
 	 * @Route("/search", name="search", methods={"GET"})
+	 * @param Request $request
+	 * @param ArticleRepository $tArticle
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
 	public function     Search(Request $request, ArticleRepository $tArticle)
 	{
 		$gloriusQuest = $request->query->all();
-		$tcheck2 = ['priceMin', 'priceMax', 'title', 'description', 'model', 'category0'];
+		$tcheck2 = ['priceMin', 'priceMax', 'title', 'description', 'model', 'category'];
 		$tQuery = [
 			['priceMin', 'a.price > :priceMin'],
 			['priceMax', 'a.price < :priceMax'],['title', 'a.title like :title'],
@@ -33,50 +36,37 @@ class SearchController extends AbstractController
 		if ($findValue !== true)
 			return ($this->json($tArticle->findAll()));
 		else
-			return ($this->json($this->initSearchAnd([ $gloriusQuest, $quest ],
+			return ($this->json($this->initSearchAnd($gloriusQuest,
 				$tQuery, $tArticle)));
 	}
 
+	/**
+	 * @param $quest
+	 * @param $tQuery
+	 * @param ArticleRepository $rAtcicle
+	 * @return mixed
+	 */
 	private function    initSearchAnd($quest, $tQuery ,ArticleRepository $rAtcicle)
 	{
-		$key = $quest[1];
-		$tval = $quest[0];
-		$tValCate = [];
-		$n = 0;
 		$c = -1;
 		$lentQ = count($tQuery);
-		foreach ($tval as $keys => $val)
-		{
-			if ($keys === 'category' . $n)
-			{
-				$tValCate[$n] = $val;
-				$n++;
-			}
-		}
 		$query = $rAtcicle->createQueryBuilder('a');
 		while (++$c < $lentQ)
 		{
-			if (isset($tval[$tQuery[$c][0]]))
+			if (isset($quest[$tQuery[$c][0]]))
 			{
 				$query->andWhere($tQuery[$c][1]);
 				if ($tQuery[$c][0] === 'title')
-					$query->setParameter($tQuery[$c][0], $tval[$tQuery[$c][0]] . '%');
+					$query->setParameter($tQuery[$c][0], $quest[$tQuery[$c][0]] . '%');
 				else if ($tQuery[$c][0] === 'description')
-					$query->setParameter($tQuery[$c][0], '%' . $tval[$tQuery[$c][0]] . '%');
+					$query->setParameter($tQuery[$c][0], '%' . $quest[$tQuery[$c][0]] . '%');
 				else
-					$query->setParameter($tQuery[$c][0], $tval[$tQuery[$c][0]]);
+					$query->setParameter($tQuery[$c][0], $quest[$tQuery[$c][0]]);
 			}
 		}
-
-		if (count($tValCate) > 0)
-			$query->where($query->expr()->in('a.category', $tValCate));
-		$art = $query->getQuery();
-		$tmp = $art->execute();
-		return ($tmp);
-	}
-
-	private function    func($spel)
-	{
-
+		if (isset($quest['category']) && count($quest['category']) > 0)
+			$query->andWhere($query->expr()->in('a.category', $quest['category']));
+		$art = $query->getQuery()->execute();
+		return ($art);
 	}
 }
