@@ -2,14 +2,12 @@
 
 namespace App\Controller;
 
-use App\Entity\StockOrder;
-use App\Entity\OrderItems;
-use App\Entity\User;
+use App\Entity\{StockOrder, OrderItems, User};
 use App\Repository\ArticleRepository;
+use App\Repository\StockOrderRepository;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
@@ -20,12 +18,21 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 class OrderController extends AbstractController
 {
 
-	public function     getOrders()
+	/**
+	 * @Route("", methods={"GET"})
+	 * @param StockOrderRepository $order
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 */
+	public function     getOrders(StockOrderRepository $order)
 	{
-
+		return($this->json($order->findBy([], ['send' => 'DESC'])));
 	}
+
 	/**
 	 * @Route ("", name="addOrder", methods={"POST"})
+	 * @param Request $request
+	 * @param ArticleRepository $rArticle
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
 	public function addOrder(Request $request, ArticleRepository $rArticle)
 	{
