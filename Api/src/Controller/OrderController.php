@@ -29,12 +29,20 @@ class OrderController extends AbstractController
 	}
 
 	/**
-	 * @Route ("", name="addOrder", methods={"POST"})
+	 * @Route("/{id}", name="get_order", methods={"GET"})
+	 */
+	public function     getOrder(StockOrder $order)
+	{
+		return ($this->json($order));
+	}
+
+	/**
+	 * @Route("", name="addOrder", methods={"POST"})
 	 * @param Request $request
 	 * @param ArticleRepository $rArticle
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
-	public function addOrder(Request $request, ArticleRepository $rArticle)
+	public function     addOrder(Request $request, ArticleRepository $rArticle)
 	{
 		try
 		{
@@ -48,7 +56,6 @@ class OrderController extends AbstractController
 			{
 				$manager->persist($ordersItem);
 				$manager->flush();
-//				$manager->refresh($ordersItem);
 				return($this->json($ordersItem, 200));
 			}
 		}catch (\Exception $e)
@@ -88,26 +95,5 @@ class OrderController extends AbstractController
 			$order->getOrderItems()->add($item);
 		}
 		return ($order);
-	}
-
-	/**
-	 * @param Request $request
-	 * @return User
-	 * @throws AccessDeniedException | UnauthorizedHttpException
-	 */
-	private function _findAdminOrFail(Request $request)
-	{
-		$token = $request->headers->get('token');
-		if (!$token) {
-			throw new UnauthorizedHttpException('', 'Missing Token');
-		}
-		$user = $this->getDoctrine()
-			->getManager()
-			->getRepository(User::class)
-			->findAdminByToken($token);
-		if (!$user) {
-			throw new AccessDeniedHttpException();
-		}
-		return $user;
 	}
 }
