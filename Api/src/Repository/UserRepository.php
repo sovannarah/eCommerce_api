@@ -20,6 +20,7 @@ class UserRepository extends ServiceEntityRepository
 		parent::__construct($registry, User::class);
 	}
 
+	/** @noinspection PhpDocMissingThrowsInspection */
 	/**
 	 * @param $token
 	 * @return User|null
@@ -30,8 +31,10 @@ class UserRepository extends ServiceEntityRepository
 			return $this->createQueryBuilder('u')
 				->andWhere('u.token = :val')
 				->andWhere('u.roles LIKE :roles')
+				->andWhere('u.token_expiration > :now')
 				->setParameter('val', $token)
 				->setParameter('roles', '%"ROLE_ADMIN"%')
+				->setParameter('now', new \DateTime('now'))
 				->getQuery()
 				->getOneOrNullResult();
 		} catch (NonUniqueResultException $e) {

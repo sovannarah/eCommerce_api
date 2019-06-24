@@ -2,25 +2,19 @@
 
 namespace App\Controller;
 
-use App\Entity\Article;
-use App\Entity\User;
+use App\Entity\{Article, User, Category};
 use App\Repository\ArticleRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController,
-	Symfony\Component\Routing\Annotation\Route,
-	Symfony\Component\HttpFoundation\Request,
-	Doctrine\ORM\EntityManagerInterface,
-	App\Entity\Category;
-
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\{Request, JsonResponse};
+use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\CategoryRepository;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\{HttpExceptionInterface, NotFoundHttpException};
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 
 /**
  * @Route("/category")
  */
-class CategoryController extends AbstractController
+class CategoryController extends MyAbstractController
 {
 
 	/**
@@ -83,8 +77,9 @@ class CategoryController extends AbstractController
 	{
 		$res = $this->update(new Category(), $req, $manger);
 		if ($res->getStatusCode() === 200) {
-			return $res->setStatusCode(200);
+			$res->setStatusCode(201);
 		}
+		return $res;
 	}
 
 	/**
@@ -100,12 +95,8 @@ class CategoryController extends AbstractController
 		Request $req,
 		EntityManagerInterface $manger
 	): JsonResponse {
-		$admin = $manger->getRepository(User::class)
-			->findAdminByToken($req->headers->get('token'));
-		if (!$admin) {
-			return $this->json('invalid/missing token', 401);
-		}
 		try {
+			$this->_findAdminOrFail($req);
 			$this->_setParentOn($cat, $req->request->get('parentId'));
 		} catch (InvalidParameterException | NotFoundHttpException $e) {
 			$status = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
