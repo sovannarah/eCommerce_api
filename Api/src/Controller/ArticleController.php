@@ -58,6 +58,7 @@ class ArticleController extends AbstractController
 	 */
 	public function read(Article $article): JsonResponse
 	{
+		// return $this->json([$article->getVariantArticles()[0]->getSpec(), $article->getVariantArticles()[1]->getSpec()]);
 		return $this->json($article);
 	}
 
