@@ -317,13 +317,13 @@ class Article implements \JsonSerializable
 		bool $allowEmpty = false,
 		bool $allowNull = true
 	): void {
-		if (($allowNull && $val === null)
-			|| ($allowEmpty && $val === '')
-			|| is_string($val)) {
-			return;
+		if ((!$allowNull && $val === null) ||
+			(!$allowEmpty && $val === '') ||
+			!is_string($val))
+		{
+			throw new InvalidParameterException($fieldName . ' invalid');
 		}
-		throw new InvalidParameterException($fieldName.' invalid');
-	}
+}
 
 	public function getStockOrder(): ?StockOrder
 	{

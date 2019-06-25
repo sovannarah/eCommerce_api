@@ -7,7 +7,7 @@ use App\Repository\ArticleRepository;
 use App\Repository\StockOrderRepository;
 use function PHPSTORM_META\type;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\{Request,JsonResponse};
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
@@ -45,8 +45,8 @@ class OrderController extends AbsCheckUserController
 	public function     addOrder(Request $request, ArticleRepository $rArticle)
 	{
 			$user = $this->isAdmin($request);
-			if (is_array($user))
-				return ($user[0]);
+			if ($user instanceof JsonResponse)
+				return ($user);
 			$manager = $this->getDoctrine()->getManager();
 			$ordersItem = $this->engineRequest($rArticle,
 				$request->request->get('articles'));

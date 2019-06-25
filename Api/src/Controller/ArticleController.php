@@ -116,12 +116,12 @@ class ArticleController extends AbstractController
 		try {
 			$admin = $this->_findAdminOrFail($request);
 			$category = $categoryRepository->findOrFail($category);
-			$article->setCategory($category);
-			$article->setUser($admin);
-			$article->setTitle($request->request->get('title'));
-			$article->setDescription($request->request->get('description'));
-			$article->setPrice($request->request->get('price'));
-			$article->setStock($request->request->get('stock'));
+			$article->setCategory($category)
+				->setUser($admin)
+				->setTitle($request->request->get('title'))
+				->setDescription($request->request->get('description'))
+				->setPrice($request->request->get('price'))
+				->setStock($request->request->get('stock'));
 			self::_updateImages($article, $request->files->get('images'));
 		} catch (\Exception $e) {
 			$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
