@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 
-abstract class CheckUserAbsController extends AbstractController
+abstract class AbsCheckUserController extends AbstractController
 {
 	protected function isAdmin(Request $quest)
 	{

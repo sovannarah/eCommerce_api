@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  * @package App\Controller
  * @Route("/order")
  */
-class OrderController extends CheckUserAbsController
+class OrderController extends AbsCheckUserController
 {
 
 	/**
@@ -44,8 +44,6 @@ class OrderController extends CheckUserAbsController
 	 */
 	public function     addOrder(Request $request, ArticleRepository $rArticle)
 	{
-		try
-		{
 			$user = $this->isAdmin($request);
 			if (is_array($user))
 				return ($user[0]);
@@ -60,14 +58,6 @@ class OrderController extends CheckUserAbsController
 				$manager->flush();
 				return($this->json($ordersItem, 200));
 			}
-		}catch (\Exception $e)
-		{
-			if ($e instanceof HttpExceptionInterface)
-				$statusCode = $e->getStatusCode();
-			else
-				$statusCode = 400;
-			return $this->json($e->getMessage(), $statusCode);
-		}
 	}
 
 	/**
