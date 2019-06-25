@@ -30,7 +30,7 @@ class StockOrderItem extends OrderItem
 	public function setOrder(?Order $order): OrderItem
 	{
 		if (!$order instanceof StockOrder) {
-			throw new \InvalidArgumentException(__METHOD__ . ' requires parameter order to be of type '. StockOrder::class);
+			throw new \InvalidArgumentException('Parameter $order to be of type '. StockOrder::class);
 		}
 		$this->stockOrder = $order;
 

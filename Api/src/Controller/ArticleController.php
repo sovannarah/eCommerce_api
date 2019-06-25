@@ -93,7 +93,7 @@ class ArticleController extends MyAbstractController
 		$entityManager = $this->getDoctrine()->getManager();
 		$entityManager->remove($article);
 		$entityManager->flush();
-		self::_updateImages($article, []);
+		static::_updateImages($article, []);
 
 		return new Response();
 	}
@@ -118,7 +118,7 @@ class ArticleController extends MyAbstractController
 			$article->setDescription($request->request->get('description'));
 			$article->setPrice($request->request->get('price'));
 			$article->setStock($request->request->get('stock'));
-			self::_updateImages($article, $request->files->get('images'));
+			static::_updateImages($article, $request->files->get('images'));
 		} catch (\Exception $e) {
 			$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
 

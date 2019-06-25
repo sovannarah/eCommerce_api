@@ -99,7 +99,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setUser(?User $user): self
 	{
-		self::_assertNotNull('user', $user);
+		static::_assertNotNull('user', $user);
 		$this->user = $user;
 
 		return $this;
@@ -117,7 +117,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setTitle(?string $title): self
 	{
-		self::_assertString('title', $title);
+		static::_assertString('title', $title);
 		$this->title = $title;
 
 		return $this;
@@ -135,7 +135,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setDescription(?string $description): self
 	{
-		self::_assertString('description', $description);
+		static::_assertString('description', $description);
 		$this->description = $description;
 
 		return $this;
@@ -154,7 +154,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setPrice($price = null): self
 	{
-		self::_assertNotNegInt('price', $price);
+		static::_assertNotNegInt('price', $price);
 		$this->price = $price;
 
 		return $this;
@@ -188,7 +188,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setCategory(?Category $category): self
 	{
-		self::_assertNotNull('category', $category);
+		static::_assertNotNull('category', $category);
 		$this->category = $category;
 
 		return $this;
@@ -204,7 +204,7 @@ class Article implements \JsonSerializable
 		if ($nb_views === null) {
 			$nb_views = 0;
 		} else {
-			self::_assertNotNegInt('nb_views', $nb_views);
+			static::_assertNotNegInt('nb_views', $nb_views);
 		}
 		$this->nb_views = (int)$nb_views;
 
@@ -229,7 +229,7 @@ class Article implements \JsonSerializable
 	public function setStock($stock): self
 	{
 		$stock = $stock !== '' ? $stock : null;
-		self::_assertNotNegInt('stock', $stock, true);
+		static::_assertNotNegInt('stock', $stock, true);
 		$this->stock = $stock;
 
 		return $this;

@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * @ORM\MappedSuperclass
@@ -144,8 +145,16 @@ abstract class Order
 		return $this->user;
 	}
 
+	/**
+	 * @param User|null $user
+	 * @return Order
+	 * @throws UnauthorizedHttpException if $user is null
+	 */
 	public function setUser(?User $user): self
 	{
+		if (!$user) {
+			throw new UnauthorizedHttpException('', 'User cannot be null');
+		}
 		$this->user = $user;
 
 		return $this;
