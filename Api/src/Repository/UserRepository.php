@@ -34,7 +34,7 @@ class UserRepository extends ServiceEntityRepository
 				->andWhere('u.token_expiration > :now')
 				->setParameter('val', $token)
 				->setParameter('roles', '%"ROLE_ADMIN"%')
-				->setParameter('now', new \DateTime('now'))
+				->setParameter('now', new \DateTime())
 				->getQuery()
 				->getOneOrNullResult();
 		} catch (NonUniqueResultException $e) {

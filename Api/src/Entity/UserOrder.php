@@ -7,9 +7,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\StockOrderRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\UserOrderRepository")
  */
-class StockOrder extends Order
+class UserOrder extends Order
 {
 	/**
 	 * @ORM\OneToMany(targetEntity="OrderItem", mappedBy="orders", orphanRemoval=true)
@@ -28,4 +28,6 @@ class StockOrder extends Order
 	{
 		return $this->orderItems;
 	}
+
+
 }

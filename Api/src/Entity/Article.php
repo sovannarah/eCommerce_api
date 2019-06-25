@@ -39,7 +39,7 @@ class Article implements \JsonSerializable
 	private $description;
 
 	/**
-	 * @ORM\Column(type="integer", options={"unsigned"=true, })
+	 * @ORM\Column(type="integer", options={"unsigned":true})
 	 * @Assert\PositiveOrZero
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
@@ -59,26 +59,21 @@ class Article implements \JsonSerializable
 	private $category;
 
 	/**
-	 * @ORM\Column(type="integer", options={"default":0})
+	 * @ORM\Column(type="integer", options={"default":0, "unsigned":true})
 	 * @Assert\PositiveOrZero
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
 	private $nb_views = 0;
 
 	/**
-	 * @ORM\Column(type="integer", nullable=true)
+	 * @ORM\Column(type="integer", options={"unsigned":true})
 	 * @Assert\PositiveOrZero
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
 	private $stock;
 
 	/**
-	 * @ORM\ManyToMany(targetEntity="App\Entity\StockOrder", inversedBy="detail")
-	 */
-	private $stockOrder;
-
-	/**
-	 * @ORM\OneToMany(targetEntity="App\Entity\OrderItems", mappedBy="article")
+	 * @ORM\OneToMany(targetEntity="OrderItem", mappedBy="article")
 	 */
 	private $orderItems;
 
@@ -204,7 +199,7 @@ class Article implements \JsonSerializable
 		return $this->nb_views ?? 0;
 	}
 
-	public function setNbViews($nb_views = null): self
+	public function setNbViews($nb_views): self
 	{
 		if ($nb_views === null) {
 			$nb_views = 0;
@@ -333,37 +328,6 @@ class Article implements \JsonSerializable
 	public function setStockOrder(?StockOrder $stockOrder): self
 	{
 		$this->stockOrder = $stockOrder;
-
-		return $this;
-	}
-
-	/**
-	 * @return Collection|OrderItems[]
-	 */
-	public function getOrderItems(): Collection
-	{
-		return $this->orderItems;
-	}
-
-	public function addOrderItem(OrderItems $orderItem): self
-	{
-		if (!$this->orderItems->contains($orderItem)) {
-			$this->orderItems[] = $orderItem;
-			$orderItem->setArticle($this);
-		}
-
-		return $this;
-	}
-
-	public function removeOrderItem(OrderItems $orderItem): self
-	{
-		if ($this->orderItems->contains($orderItem)) {
-			$this->orderItems->removeElement($orderItem);
-			// set the owning side to null (unless already changed)
-			if ($orderItem->getArticle() === $this) {
-				$orderItem->setArticle(null);
-			}
-		}
 
 		return $this;
 	}

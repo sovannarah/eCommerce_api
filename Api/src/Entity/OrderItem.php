@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\OrderItemsRepository")
+ * @ORM\MappedSuperclass
  */
-class OrderItems
+abstract class OrderItem
 {
 	/**
 	 * @ORM\Id()
@@ -22,14 +23,11 @@ class OrderItems
 	private $article;
 
 	/**
-	 * @ORM\Column(type="integer")
+	 * @ORM\Column(type="integer", options={"unsigned":true})
+	 * @Assert\PositiveOrZero
+	 * @Assert\GreaterThanOrEqual(0)
 	 */
 	private $quantity;
-
-	/**
-	 * @ORM\ManyToOne(targetEntity="App\Entity\StockOrder", inversedBy="orderItems")
-	 */
-	private $orders;
 
 	public function getId(): ?int
 	{
@@ -60,15 +58,12 @@ class OrderItems
 		return $this;
 	}
 
-	public function getOrders(): ?StockOrder
-	{
-		return $this->orders;
-	}
+	abstract public function getOrder(): ?Order;
 
-	public function setOrders(?StockOrder $orders): self
-	{
-		$this->orders = $orders;
-
-		return $this;
-	}
+	/**
+	 * @param Order|null $order
+	 * @return $this
+	 * @throws \InvalidArgumentException if $order isn't of the given $order isn't of correct subtype
+	 */
+	abstract public function setOrder(?Order $order): self;
 }
