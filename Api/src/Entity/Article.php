@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Routing\Exception\InvalidParameterException;
@@ -37,7 +39,7 @@ class Article implements \JsonSerializable
 	private $description;
 
 	/**
-	 * @ORM\Column(type="integer", options={"unsigned"=true, })
+	 * @ORM\Column(type="integer", options={"unsigned":true})
 	 * @Assert\PositiveOrZero
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
@@ -57,18 +59,28 @@ class Article implements \JsonSerializable
 	private $category;
 
 	/**
-	 * @ORM\Column(type="integer", options={"default":0})
+	 * @ORM\Column(type="integer", options={"default":0, "unsigned":true})
 	 * @Assert\PositiveOrZero
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
 	private $nb_views = 0;
 
 	/**
-	 * @ORM\Column(type="integer", nullable=true)
+	 * @ORM\Column(type="integer", options={"unsigned":true})
 	 * @Assert\PositiveOrZero
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
 	private $stock;
+
+	/**
+	 * @ORM\OneToMany(targetEntity="OrderItem", mappedBy="article")
+	 */
+	private $orderItems;
+
+	public function __construct()
+	{
+		$this->orderItems = new ArrayCollection();
+	}
 
 	public function getId(): ?int
 	{
@@ -87,7 +99,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setUser(?User $user): self
 	{
-		self::_assertNotNull('user', $user);
+		static::_assertNotNull('user', $user);
 		$this->user = $user;
 
 		return $this;
@@ -105,7 +117,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setTitle(?string $title): self
 	{
-		self::_assertString('title', $title);
+		static::_assertString('title', $title);
 		$this->title = $title;
 
 		return $this;
@@ -123,7 +135,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setDescription(?string $description): self
 	{
-		self::_assertString('description', $description);
+		static::_assertString('description', $description);
 		$this->description = $description;
 
 		return $this;
@@ -142,7 +154,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setPrice($price = null): self
 	{
-		self::_assertNotNegInt('price', $price);
+		static::_assertNotNegInt('price', $price);
 		$this->price = $price;
 
 		return $this;
@@ -176,7 +188,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setCategory(?Category $category): self
 	{
-		self::_assertNotNull('category', $category);
+		static::_assertNotNull('category', $category);
 		$this->category = $category;
 
 		return $this;
@@ -187,12 +199,12 @@ class Article implements \JsonSerializable
 		return $this->nb_views ?? 0;
 	}
 
-	public function setNbViews($nb_views = null): self
+	public function setNbViews($nb_views): self
 	{
 		if ($nb_views === null) {
 			$nb_views = 0;
 		} else {
-			self::_assertNotNegInt('nb_views', $nb_views);
+			static::_assertNotNegInt('nb_views', $nb_views);
 		}
 		$this->nb_views = (int)$nb_views;
 
@@ -217,7 +229,7 @@ class Article implements \JsonSerializable
 	public function setStock($stock): self
 	{
 		$stock = $stock !== '' ? $stock : null;
-		self::_assertNotNegInt('stock', $stock, true);
+		static::_assertNotNegInt('stock', $stock, true);
 		$this->stock = $stock;
 
 		return $this;
@@ -306,5 +318,17 @@ class Article implements \JsonSerializable
 			return;
 		}
 		throw new InvalidParameterException($fieldName.' invalid');
+	}
+
+	public function getStockOrder(): ?StockOrder
+	{
+		return $this->stockOrder;
+	}
+
+	public function setStockOrder(?StockOrder $stockOrder): self
+	{
+		$this->stockOrder = $stockOrder;
+
+		return $this;
 	}
 }
