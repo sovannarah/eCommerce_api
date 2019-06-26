@@ -13,6 +13,7 @@ class MyAbstractController extends AbstractController
 {
 
 	/**
+	 * @deprecated use findUserOrFail with $admin param set to true
 	 * @param Request $request
 	 * @return User
 	 * @throws AccessDeniedHttpException
@@ -20,14 +21,28 @@ class MyAbstractController extends AbstractController
 	 */
 	protected function _findAdminOrFail(Request $request): User
 	{
+		return $this->findUserOrFail($request, true);
+	}
+
+	/**
+	 * @param Request $request
+	 * @param bool $admin weather user should be an admin
+	 * @return User
+	 * @throws AccessDeniedHttpException
+	 * @throws UnauthorizedHttpException
+	 */
+	protected function findUserOrFail(Request $request, bool $admin = false): User
+	{
 		$token = $request->headers->get('token');
 		if (!$token) {
 			throw new UnauthorizedHttpException('', 'Missing Token');
 		}
-		$user = $this->getDoctrine()
+		$userRep = $this->getDoctrine()
 			->getManager()
-			->getRepository(User::class)
-			->findAdminByToken($token);
+			->getRepository(User::class);
+		$user = $admin ?
+			$userRep->findAdminByToken($token) :
+			$userRep->findOneByToken($token);
 		if (!$user) {
 			throw new AccessDeniedHttpException();
 		}
