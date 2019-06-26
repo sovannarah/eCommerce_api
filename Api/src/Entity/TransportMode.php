@@ -24,7 +24,7 @@ class TransportMode
     private $name;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\TransportOffer", mappedBy="transport")
+     * @ORM\OneToMany(targetEntity="App\Entity\TransportOffer", mappedBy="transport", cascade={"persist"})
      */
     private $transportOffers;
 

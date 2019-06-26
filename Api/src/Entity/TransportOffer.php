@@ -30,7 +30,7 @@ class TransportOffer
     private $transport;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\SpecOffer", mappedBy="offer", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\SpecOffer", mappedBy="offer", orphanRemoval=true, cascade={"persist"})
      */
     private $specOffers;
 

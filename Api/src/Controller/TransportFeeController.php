@@ -2,10 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\SpecsOffer;
-use App\Entity\SpecsOfferPrice;
-use App\Entity\TransportFee;
-use App\Entity\TransportOffer;
+use App\Entity\{TransportMode, TransportOffer, SpecOffer};
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -32,46 +29,56 @@ class TransportFeeController extends MyAbstractController
 	 */
 	public function     create(Request $req)
 	{
-		var_dump($req->request->all());
+//		var_dump($req->request->all());
 		$tUnity = ['EUR', 'DOL', 'kg', 'g', 'cm', 'm'];
-		$entity = ['TransportFee','TransportOffer', 'SpecsOffer',
-			'SpecsOfferPrice'];
-//		return ($this->recMakeTransport($entity, $tUnity, $req->request->all()));
+		$entity = [
+			[TransportMode::class, 'TransportMode'],
+			[TransportOffer::class, 'TransportOffer'],
+			[SpecOffer::class, 'SpecOffer']];
+		try
+		{
+			return ($this->json($this->recMakeTransport($entity,
+				$tUnity,
+				$req->request->all())
+			));
+		} catch (\Exception $e)
+		{
+			if ($e instanceof  HttpExceptionInterface)
+				$status = $e->getStatusCode();
+			else
+				$status = 400;
+			return ($this->json($e->getMessage(), $status));
+		}
 	}
 
-	private function    recMakeTransport($tEnity, $tUnity, $treq, $count = 0)
+	private function    recMakeTransport($tEntity, $tUnity, $treq, $count = 0)
 	{
-		$entity = new $tEnity[$count]();
+		$entity = new $tEntity[$count][0]();
+		var_dump("=========" . $tEntity[$count][1] . "==============");
 		foreach ($treq as $key => $value)
 		{
-			if ($key !== 'value' && is_array($value))
+			if (is_array($value) && isset($tEntity[$count]))
 			{
-				$manager = $this->getDoctrine()->getManager();
-				try
+				$c = -1;
+				while (isset($value[++$c]))
 				{
-					$recEntity = $this->RecMakeTransport($tEnity,$tUnity, $value, $count + 1);
-					$entity->{"add" . $tEnity[$count + 1]}($recEntity);
-					$manager->persist($entity);
-					$manager->flush();
-				} catch (\Exception $e)
-				{
-					if ($e instanceof HttpExceptionInterface)
-						$statusCode = $e->getStatusCode();
-					else
-						$statusCode = 400;
-					return ($this->json($e->getMessage(), $statusCode));
+					$recEntity = $this->recMakeTransport($tEntity, $tUnity, $value, $count + 1);
+				    $entity->{'add' .   $tEntity[$count + 1][1]}($recEntity);
+				    $manager = $this->getDoctrine()->getManager();
+				    $manager->persist($entity);
 				}
+//				if ($entity instanceof TransportMode)
+//					$manager->flush();
 			}
 			else if ($key === 'name')
-				$entity->setName($value);
-			else if ($key === 'unity' && in_array($value, $tUnity))
-				$entity->setUnity($value);
-			if ($key === 'value')
 			{
-				foreach ($value as $pkey => $pval)
-				{
-				}
-				return ($tEnity[0]);
+				var_dump("== Name " . $value . "==");
+				$entity->setName($value);
+			}
+			else if ($entity instanceof SpecOffer)
+			{
+				var_dump("== minVal " . $value . "==");
+				$entity->setMinVal($value);
 			}
 		}
 		return ($entity);
