@@ -40,7 +40,7 @@ class TransportFeeController extends MyAbstractController
 			return ($this->json($this->recMakeTransport($entity,
 				$tUnity,
 				$req->request->all())
-			));
+				, 200));
 		} catch (\Exception $e)
 		{
 			if ($e instanceof  HttpExceptionInterface)
@@ -51,10 +51,16 @@ class TransportFeeController extends MyAbstractController
 		}
 	}
 
+	/**
+	 * @param $tEntity
+	 * @param $tUnity
+	 * @param $treq
+	 * @param int $count
+	 * @return TransportMode
+	 */
 	private function    recMakeTransport($tEntity, $tUnity, $treq, $count = 0)
 	{
 		$entity = new $tEntity[$count][0]();
-		var_dump("=========" . $tEntity[$count][1] . "==============");
 		foreach ($treq as $key => $value)
 		{
 			if (is_array($value) && isset($tEntity[$count]))
@@ -62,25 +68,37 @@ class TransportFeeController extends MyAbstractController
 				$c = -1;
 				while (isset($value[++$c]))
 				{
-					$recEntity = $this->recMakeTransport($tEntity, $tUnity, $value, $count + 1);
+					$recEntity = $this->recMakeTransport($tEntity, $tUnity, $value[$c], $count + 1);
 				    $entity->{'add' .   $tEntity[$count + 1][1]}($recEntity);
 				    $manager = $this->getDoctrine()->getManager();
 				    $manager->persist($entity);
 				}
-//				if ($entity instanceof TransportMode)
-//					$manager->flush();
+				if ($entity instanceof TransportMode)
+					$manager->flush();
 			}
-			else if ($key === 'name')
-			{
-				var_dump("== Name " . $value . "==");
-				$entity->setName($value);
-			}
-			else if ($entity instanceof SpecOffer)
-			{
-				var_dump("== minVal " . $value . "==");
-				$entity->setMinVal($value);
-			}
+			else
+				$this->TransportEngine($entity, $key, $value);
 		}
 		return ($entity);
+	}
+
+	/**
+	 * @param $entity
+	 * @param $key
+	 * @param $value
+	 */
+	private function    TransportEngine(&$entity, $key, $value)
+	{
+		if ($key === 'name')
+				$entity->setName($value);
+			else if ($entity instanceof SpecOffer)
+			{
+				if ($key === 'minValue')
+					$entity->setMinValue($value);
+				else if ($key === 'price')
+					$entity->setPrice($value);
+				else if ($key === 'unity')
+					$entity->setUnity($value);
+			}
 	}
 }
