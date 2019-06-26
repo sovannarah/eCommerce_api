@@ -77,26 +77,16 @@ class Article implements \JsonSerializable
 	 */
 	private $orderItems;
 
+	/**
+	 * @ORM\OneToMany(targetEntity="App\Entity\VariantArticle", mappedBy="parent", orphanRemoval=true)
+	 */
+	private $variantArticles;
+
 	public function __construct()
 	{
 		$this->orderItems = new ArrayCollection();
-		$this->variants = new ArrayCollection();
         $this->variantArticles = new ArrayCollection();
 	}
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Article", inversedBy="variants")
-     */
-    private $variantOf;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Article", mappedBy="variantOf")
-     */
-    private $variants;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\VariantArticle", mappedBy="parent", orphanRemoval=true)
-     */
-    private $variantArticles;
 
 	public function getId(): ?int
 	{
@@ -110,7 +100,7 @@ class Article implements \JsonSerializable
 
 	/**
 	 * @param User|null $user
-	 * @return Article
+	 * @return $this
 	 * @throws InvalidParameterException if $user is null
 	 */
 	public function setUser(?User $user): self
@@ -128,7 +118,7 @@ class Article implements \JsonSerializable
 
 	/**
 	 * @param string|null $title
-	 * @return Article
+	 * @return $this
 	 * @throws InvalidParameterException if $title is null
 	 */
 	public function setTitle(?string $title): self
@@ -146,7 +136,7 @@ class Article implements \JsonSerializable
 
 	/**
 	 * @param string|null $description
-	 * @return Article
+	 * @return $this
 	 * @throws InvalidParameterException if $description is null
 	 */
 	public function setDescription(?string $description): self
@@ -165,7 +155,7 @@ class Article implements \JsonSerializable
 	/**
 	 * @Assert\PositiveOrZero
 	 * @param int|null $price >= 0
-	 * @return Article
+	 * @return $this
 	 * @throws InvalidParameterException if $price is negative ot null
 	 */
 	public function setPrice($price = null): self
@@ -199,7 +189,7 @@ class Article implements \JsonSerializable
 
 	/**
 	 * @param Category|null $category
-	 * @return Article
+	 * @return $this
 	 * @throws InvalidParameterException if $category is null
 	 */
 	public function setCategory(?Category $category): self
@@ -239,7 +229,7 @@ class Article implements \JsonSerializable
 
 	/**
 	 * @param int|null $stock
-	 * @return Article
+	 * @return $this
 	 * @throws InvalidParameterException if $stock is not null, or positive or zero int
 	 */
 	public function setStock($stock): self
@@ -333,59 +323,17 @@ class Article implements \JsonSerializable
 	}
 
 	private static function _assertString(
-	string $fieldName,
-	$val,
-	bool $allowEmpty = false,
-	bool $allowNull = true
+		string $fieldName,
+		$val,
+		bool $allowEmpty = false,
+		bool $allowNull = true
 	): void {
-		if ((!$allowNull && $val === null) &&
-			(!$allowEmpty && $val === '') &&
+		if ((!$allowNull && $val === null) ||
+			(!$allowEmpty && $val === '') ||
 			!is_string($val)) {
 			throw new InvalidParameterException($fieldName.' invalid');
 		}
 	}
-    public function getVariantOf(): ?self
-    {
-        return $this->variantOf;
-    }
-
-    public function setVariantOf(?self $variantOf): self
-    {
-        $this->variantOf = $variantOf;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|self[]
-     */
-    public function getVariants(): Collection
-    {
-        return $this->variants;
-    }
-
-    public function addVariant(self $variant): self
-    {
-        if (!$this->variants->contains($variant)) {
-            $this->variants[] = $variant;
-            $variant->setVariantOf($this);
-        }
-
-        return $this;
-    }
-
-    public function removeVariant(self $variant): self
-    {
-        if ($this->variants->contains($variant)) {
-            $this->variants->removeElement($variant);
-            // set the owning side to null (unless already changed)
-            if ($variant->getVariantOf() === $this) {
-                $variant->setVariantOf(null);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * @return Collection|VariantArticle[]
