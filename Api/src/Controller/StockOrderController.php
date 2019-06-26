@@ -31,7 +31,7 @@ class StockOrderController extends MyAbstractController
 	public function index(Request $request, StockOrderRepository $sORep): JsonResponse
 	{
 		try {
-			$this->_findAdminOrFail($request);
+			$this->findUserOrFail($request, true);
 		} catch (AccessDeniedHttpException | UnauthorizedHttpException $e) {
 			return $this->json($e->getMessage(), $e->getStatusCode());
 		}
@@ -48,7 +48,7 @@ class StockOrderController extends MyAbstractController
 	public function read(Request $request, StockOrder $so): JsonResponse
 	{
 		try {
-			$this->_findAdminOrFail($request);
+			$this->findUserOrFail($request, true);
 		} catch (AccessDeniedHttpException | UnauthorizedHttpException $e) {
 			return $this->json($e->getMessage(), $e->getStatusCode());
 		}
@@ -67,8 +67,8 @@ class StockOrderController extends MyAbstractController
 	{
 		$so = new StockOrder();
 		try {
-			$so->setUser($this->_findAdminOrFail($request));
-			static::setItems($so, $request->request->get('items'), $eManager);
+			$so->setUser($this->findUserOrFail($request, true));
+			static::setItems($so, $request, $eManager);
 		} catch (AccessDeniedHttpException | UnauthorizedHttpException $e) {
 			return $this->json($e->getMessage(), $e->getStatusCode());
 		}
@@ -81,7 +81,7 @@ class StockOrderController extends MyAbstractController
 
 	/**
 	 * @param StockOrder $so
-	 * @param string[][] $itemDatas
+	 * @param Request $request
 	 * @param EntityManagerInterface $eManager
 	 * @throws BadRequestHttpException
 	 * @throws NotFoundHttpException
@@ -89,14 +89,11 @@ class StockOrderController extends MyAbstractController
 	 */
 	private static function setItems(
 		StockOrder $so,
-		$itemDatas,
+		Request $request,
 		EntityManagerInterface $eManager
 	): void {
-		if (!is_iterable($itemDatas)) {
-			throw new BadRequestHttpException('Invalid param type for items');
-		}
 		$articleRep = $eManager->getRepository(Article::class);
-		foreach ($itemDatas as $itemData) {
+		foreach ($request->request->all() as $itemData) {
 			$sOItem = static::initItem($itemData, $articleRep);
 			$so->addOrderItem($sOItem);
 			$eManager->persist($sOItem);
