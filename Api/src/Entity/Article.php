@@ -80,7 +80,23 @@ class Article implements \JsonSerializable
 	public function __construct()
 	{
 		$this->orderItems = new ArrayCollection();
+		$this->variants = new ArrayCollection();
+        $this->variantArticles = new ArrayCollection();
 	}
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Article", inversedBy="variants")
+     */
+    private $variantOf;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Article", mappedBy="variantOf")
+     */
+    private $variants;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\VariantArticle", mappedBy="parent", orphanRemoval=true)
+     */
+    private $variantArticles;
 
 	public function getId(): ?int
 	{
@@ -247,6 +263,8 @@ class Article implements \JsonSerializable
 		$simpleSerializable = $this->nestedJsonSerialize();
 		$simpleSerializable['category'] =
 			Category::rec_jsonSerializeParent($this->getCategory());
+		// $simpleSerializable['variants'] = $this->getVariantArticles()->toArray();
+		$simpleSerializable['variants'] = $this->orderVariants($this->getVariantArticles()->toArray());
 
 		return $simpleSerializable;
 	}
@@ -262,6 +280,14 @@ class Article implements \JsonSerializable
 			'stock' => $this->getStock(),
 			'images' => $this->_jsonSerializeImages(),
 		];
+	}
+
+	private function orderVariants($variants): array
+	{
+		$array = [];
+		foreach ($variants as $variant)
+			$array[$variant->getType()][] = $variant;
+		return $array;
 	}
 
 	private function _jsonSerializeImages(): array
@@ -307,10 +333,10 @@ class Article implements \JsonSerializable
 	}
 
 	private static function _assertString(
-		string $fieldName,
-		$val,
-		bool $allowEmpty = false,
-		bool $allowNull = true
+	string $fieldName,
+	$val,
+	bool $allowEmpty = false,
+	bool $allowNull = true
 	): void {
 		if ((!$allowNull && $val === null) &&
 			(!$allowEmpty && $val === '') &&
@@ -318,4 +344,77 @@ class Article implements \JsonSerializable
 			throw new InvalidParameterException($fieldName.' invalid');
 		}
 	}
+    public function getVariantOf(): ?self
+    {
+        return $this->variantOf;
+    }
+
+    public function setVariantOf(?self $variantOf): self
+    {
+        $this->variantOf = $variantOf;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|self[]
+     */
+    public function getVariants(): Collection
+    {
+        return $this->variants;
+    }
+
+    public function addVariant(self $variant): self
+    {
+        if (!$this->variants->contains($variant)) {
+            $this->variants[] = $variant;
+            $variant->setVariantOf($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVariant(self $variant): self
+    {
+        if ($this->variants->contains($variant)) {
+            $this->variants->removeElement($variant);
+            // set the owning side to null (unless already changed)
+            if ($variant->getVariantOf() === $this) {
+                $variant->setVariantOf(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|VariantArticle[]
+     */
+    public function getVariantArticles(): Collection
+    {
+        return $this->variantArticles;
+    }
+
+    public function addVariantArticle(VariantArticle $variantArticle): self
+    {
+        if (!$this->variantArticles->contains($variantArticle)) {
+            $this->variantArticles[] = $variantArticle;
+            $variantArticle->setParent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVariantArticle(VariantArticle $variantArticle): self
+    {
+        if ($this->variantArticles->contains($variantArticle)) {
+            $this->variantArticles->removeElement($variantArticle);
+            // set the owning side to null (unless already changed)
+            if ($variantArticle->getParent() === $this) {
+                $variantArticle->setParent(null);
+            }
+        }
+
+        return $this;
+    }
 }
