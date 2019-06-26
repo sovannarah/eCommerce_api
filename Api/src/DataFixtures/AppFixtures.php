@@ -31,7 +31,7 @@ class AppFixtures extends Fixture
 	{
 		$generator = Factory::create();
 		$populator = new Populator($generator, $manager);
-		static::_addUsers($populator, $generator);
+		$this->_addUsers($populator);
 		static::_addCategories($populator, $generator);
 		static::_addArticles($populator, $generator);
 		$populator->execute();
@@ -44,7 +44,7 @@ class AppFixtures extends Fixture
 			50,
 			[
 				'images' => static::_getImagesFormatter($generator),
-				'title' => static::_getNameFormatter($generator),
+				'title' => [$generator, 'name'],
 			]
 		);
 	}
@@ -54,11 +54,11 @@ class AppFixtures extends Fixture
 		$populator->addEntity(
 			Category::class,
 			10,
-			['name' => static::_getNameFormatter($generator)]
+			['name' => [$generator, 'name']]
 		);
 	}
 
-	private static function _addUsers(Populator $populator, Generator $generator): void
+	private function _addUsers(Populator $populator): void
 	{
 		$populator->addEntity(
 			User::class,
@@ -68,15 +68,8 @@ class AppFixtures extends Fixture
 				'token' => null,
 				'token_expiration' => null,
 			],
-			[static::getUserTokenModifier()]
+			[static::getUserTokenModifier(), $this->_getUserPasswordModifier()]
 		);
-	}
-
-	private static function _getNameFormatter(Generator $generator): \Closure
-	{
-		return static function () use ($generator): string {
-			return $generator->name;
-		};
 	}
 
 	private static function _getRolesFormatter(): \Closure
