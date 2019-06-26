@@ -254,7 +254,7 @@ class Article implements \JsonSerializable
 		$simpleSerializable['category'] =
 			Category::rec_jsonSerializeParent($this->getCategory());
 		// $simpleSerializable['variants'] = $this->getVariantArticles()->toArray();
-		$simpleSerializable['variants'] = $this->orderVariants($this->getVariantArticles()->toArray());
+		$simpleSerializable['variants'] = $this->orderVariants();
 
 		return $simpleSerializable;
 	}
@@ -272,12 +272,12 @@ class Article implements \JsonSerializable
 		];
 	}
 
-	private function orderVariants($variants): array
+	private function orderVariants(): array
 	{
-		$array = [];
-		foreach ($variants as $variant)
-			$array[$variant->getType()][] = $variant;
-		return $array;
+		$ordered = [];
+		foreach ($this->getVariantArticles() as $variant)
+			$ordered[$variant->getType()][] = $variant;
+		return $ordered;
 	}
 
 	private function _jsonSerializeImages(): array
@@ -299,18 +299,18 @@ class Article implements \JsonSerializable
 	 */
 	private static function _assertNotNegInt(
 		string $fieldName,
-		$val,
+		&$val,
 		bool $allowNull = false
 	): void {
-		if (($allowNull && $val === null)
-			|| (is_int($val) && $val >= 0)
-			|| ctype_digit($val)
+		if ((!$allowNull && $val === null) ||
+			(!is_int($val) && $val < 0) ||
+			!ctype_digit($val)
 		) {
-			return;
+			throw new InvalidParameterException(
+				$fieldName.' must be a positive or 0 int'
+			);
 		}
-		throw new InvalidParameterException(
-			$fieldName.' must be a positive or 0 int'
-		);
+		$val = (int) $val;
 	}
 
 	private static function _assertNotNull(string $fieldName, $val): void
