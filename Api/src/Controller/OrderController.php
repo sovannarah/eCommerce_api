@@ -2,13 +2,10 @@
 
 namespace App\Controller;
 
-use App\Entity\{StockOrder, OrderItems, User};
-use App\Repository\ArticleRepository;
-use App\Repository\StockOrderRepository;
-use function PHPSTORM_META\type;
+use App\Entity\{StockOrder, StockOrderItem};
+use App\Repository\{ArticleRepository, StockOrderRepository};
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpFoundation\{Request,JsonResponse};
 
 /**
  * Class OrderController
@@ -21,17 +18,17 @@ class OrderController extends AbsCheckUserController
 	/**
 	 * @Route("", methods={"GET"})
 	 * @param StockOrderRepository $order
-	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 * @return JsonResponse
 	 */
-	public function     getOrders(StockOrderRepository $order)
+	public function     getOrders(StockOrderRepository $order): JsonResponse
 	{
-		return($this->json($order->findBy([], ['send' => 'DESC']),200));
+		return($this->json($order->findBy([], ['send' => 'DESC']));
 	}
 
 	/**
 	 * @Route("/{id}", name="get_order", methods={"GET"})
 	 */
-	public function     getOrder(StockOrder $order)
+	public function     getOrder(StockOrder $order): JsonResponse
 	{
 		return ($this->json($order));
 	}
@@ -40,51 +37,49 @@ class OrderController extends AbsCheckUserController
 	 * @Route("", name="addOrder", methods={"POST"})
 	 * @param Request $request
 	 * @param ArticleRepository $rArticle
-	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 * @return JsonResponse
+	 * @throws \Exception
 	 */
 	public function     addOrder(Request $request, ArticleRepository $rArticle)
 	{
 			$user = $this->isAdmin($request);
-			if (is_array($user))
-				return ($user[0]);
+			if ($user instanceof JsonResponse)
+				return ($user);
 			$manager = $this->getDoctrine()->getManager();
-			$ordersItem = $this->engineRequest($rArticle,
+			$ordersItem = $this->makeOrder($rArticle,
 				$request->request->get('articles'));
 			if ($ordersItem === false)
-				return ($this->json(['error' => 'bad Request'], 403));
+				return ($this->json('bad Request', 404));
 			else
 			{
 				$manager->persist($ordersItem);
 				$manager->flush();
-				return($this->json($ordersItem, 200));
+				return($this->json($ordersItem));
 			}
 	}
 
 	/**
 	 * @param $rArticle
-	 * @param $table
+	 * @param $tArticles
 	 * @return StockOrder|bool
-	 * @throws \Exception
 	 */
-	private function    engineRequest($rArticle, $table)
+	private function    makeOrder(ArticleRepository $rArticle, array $tArticles)
 	{
 		$c = -1;
-		$ltable = count($table);
-		$date = new \DateTime('Europe/Paris');
+		$ltable = count($tArticles);
 		$order = new StockOrder();
 		$order->setStatus(false);
-		$order->setSend($date);
 		while (++$c < $ltable)
 		{
-			if (!isset($table[$c]['id']) || !isset($table[$c]['number']))
+			if (!isset($tArticles[$c]['id'], $tArticles[$c]['number']))
 				return (false);
-			$article = $rArticle->find($table[$c]['id']);
+			$article = $rArticle->find($tArticles[$c]['id']);
 			if (!$article)
 				return (false);
-			$item = new OrderItems();
+			$item = new StockOrderItem();
 			$item->setArticle($article);
-			$item->setQuantity((int) $table[$c]['number']);
-			$order->getOrderItems()->add($item);
+			$item->setQuantity((int) $tArticles[$c]['number']);
+			$order->addOrderItem($item);
 		}
 		return ($order);
 	}

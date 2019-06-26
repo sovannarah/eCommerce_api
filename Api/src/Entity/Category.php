@@ -165,7 +165,7 @@ class Category implements \JsonSerializable
 			'id' => $this->getId(),
 			'name' => $this->getName(),
 			'children' => $this->_jsonSerializeChildren(),
-			'parent' => self::rec_jsonSerializeParent($this->getParent()),
+			'parent' => static::rec_jsonSerializeParent($this->getParent()),
 		];
 	}
 
@@ -202,9 +202,9 @@ class Category implements \JsonSerializable
 		];
 	}
 
-	public function     getDeepChildrenId(&$tChildIds)
+	public function     getDeepChildrenId(array &$tChildIds): void
 	{
-		$tChildsId[] = $this->getId();
+		$tChildIds[] = $this->getId();
 		$children = $this->getChildren();
 		$c = -1;
 		$lenchild = $children->count();
@@ -227,7 +227,7 @@ class Category implements \JsonSerializable
 			[
 				'id' => $parent->getId(),
 				'name' => $parent->getName(),
-				'parent' => self::rec_jsonSerializeParent($parent->getParent()),
+				'parent' => static::rec_jsonSerializeParent($parent->getParent()),
 			];
 	}
 

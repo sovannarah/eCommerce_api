@@ -5,114 +5,42 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\StockOrderRepository")
  */
-class StockOrder
+class StockOrder extends Order
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+	/**
+	 * @ORM\OneToMany(targetEntity="OrderItem", mappedBy="orders", orphanRemoval=true)
+	 */
+	private $orderItems;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $send;
+	public function __construct()
+	{
+		$this->orderItems = new ArrayCollection();
+	}
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $recive;
+	/**
+	 * @return Collection|OrderItem[]
+	 */
+	public function getOrderItems(): Collection
+	{
+		return $this->orderItems;
+	}
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $status;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\OrderItems", mappedBy="orders", cascade={"persist"})
-     */
-    private $orderItems;
-
-    public function __construct()
-    {
-        $this->orderItems = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getSend(): ?\DateTimeInterface
-    {
-        return $this->send;
-    }
-
-    public function setSend(\DateTimeInterface $send): self
-    {
-        $this->send = $send;
-
-        return $this;
-    }
-
-    public function getRecive(): ?\DateTimeInterface
-    {
-        return $this->recive;
-    }
-
-    public function setRecive(?\DateTimeInterface $recive): self
-    {
-        $this->recive = $recive;
-
-        return $this;
-    }
-
-    public function getStatus(): ?bool
-    {
-        return $this->status;
-    }
-
-    public function setStatus(bool $status): self
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|OrderItems[]
-     */
-    public function getOrderItems(): Collection
-    {
-        return $this->orderItems;
-    }
-
-    public function addOrderItem(OrderItems $orderItem): self
-    {
-        if (!$this->orderItems->contains($orderItem)) {
-            $this->orderItems[] = $orderItem;
-            $orderItem->setOrders($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOrderItem(OrderItems $orderItem): self
-    {
-        if ($this->orderItems->contains($orderItem)) {
-            $this->orderItems->removeElement($orderItem);
-            // set the owning side to null (unless already changed)
-            if ($orderItem->getOrders() === $this) {
-                $orderItem->setOrders(null);
-            }
-        }
-
-        return $this;
-    }
-
+	/**
+	 * @param User|null $user
+	 * @return Order
+	 * @throws UnauthorizedHttpException | AccessDeniedHttpException
+	 */
+	public function setUser(?User $user): Order
+	{
+		if ($user && !$user->isAdmin()) {
+			throw new AccessDeniedHttpException('User must be admin');
+		}
+		return parent::setUser($user);
+	}
 }

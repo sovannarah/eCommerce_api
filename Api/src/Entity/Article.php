@@ -39,7 +39,7 @@ class Article implements \JsonSerializable
 	private $description;
 
 	/**
-	 * @ORM\Column(type="integer", options={"unsigned"=true, })
+	 * @ORM\Column(type="integer", options={"unsigned":true})
 	 * @Assert\PositiveOrZero
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
@@ -59,26 +59,21 @@ class Article implements \JsonSerializable
 	private $category;
 
 	/**
-	 * @ORM\Column(type="integer", options={"default":0})
+	 * @ORM\Column(type="integer", options={"default":0, "unsigned":true})
 	 * @Assert\PositiveOrZero
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
 	private $nb_views = 0;
 
 	/**
-	 * @ORM\Column(type="integer", nullable=true)
+	 * @ORM\Column(type="integer", options={"unsigned":true})
 	 * @Assert\PositiveOrZero
 	 * @Assert\GreaterThanOrEqual(0)
 	 */
 	private $stock;
 
 	/**
-	 * @ORM\ManyToMany(targetEntity="App\Entity\StockOrder", inversedBy="detail")
-	 */
-	private $stockOrder;
-
-	/**
-	 * @ORM\OneToMany(targetEntity="App\Entity\OrderItems", mappedBy="article")
+	 * @ORM\OneToMany(targetEntity="App\Entity\OrderItem", mappedBy="article")
 	 */
 	private $orderItems;
 
@@ -104,7 +99,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setUser(?User $user): self
 	{
-		self::_assertNotNull('user', $user);
+		static::_assertNotNull('user', $user);
 		$this->user = $user;
 
 		return $this;
@@ -122,7 +117,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setTitle(?string $title): self
 	{
-		self::_assertString('title', $title);
+		static::_assertString('title', $title);
 		$this->title = $title;
 
 		return $this;
@@ -140,7 +135,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setDescription(?string $description): self
 	{
-		self::_assertString('description', $description);
+		static::_assertString('description', $description);
 		$this->description = $description;
 
 		return $this;
@@ -159,7 +154,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setPrice($price = null): self
 	{
-		self::_assertNotNegInt('price', $price);
+		static::_assertNotNegInt('price', $price);
 		$this->price = $price;
 
 		return $this;
@@ -193,7 +188,7 @@ class Article implements \JsonSerializable
 	 */
 	public function setCategory(?Category $category): self
 	{
-		self::_assertNotNull('category', $category);
+		static::_assertNotNull('category', $category);
 		$this->category = $category;
 
 		return $this;
@@ -204,12 +199,12 @@ class Article implements \JsonSerializable
 		return $this->nb_views ?? 0;
 	}
 
-	public function setNbViews($nb_views = null): self
+	public function setNbViews($nb_views): self
 	{
 		if ($nb_views === null) {
 			$nb_views = 0;
 		} else {
-			self::_assertNotNegInt('nb_views', $nb_views);
+			static::_assertNotNegInt('nb_views', $nb_views);
 		}
 		$this->nb_views = (int)$nb_views;
 
@@ -234,7 +229,7 @@ class Article implements \JsonSerializable
 	public function setStock($stock): self
 	{
 		$stock = $stock !== '' ? $stock : null;
-		self::_assertNotNegInt('stock', $stock, true);
+		static::_assertNotNegInt('stock', $stock, true);
 		$this->stock = $stock;
 
 		return $this;
@@ -317,54 +312,10 @@ class Article implements \JsonSerializable
 		bool $allowEmpty = false,
 		bool $allowNull = true
 	): void {
-		if (($allowNull && $val === null)
-			|| ($allowEmpty && $val === '')
-			|| is_string($val)) {
-			return;
+		if ((!$allowNull && $val === null) &&
+			(!$allowEmpty && $val === '') &&
+			!is_string($val)) {
+			throw new InvalidParameterException($fieldName.' invalid');
 		}
-		throw new InvalidParameterException($fieldName.' invalid');
-	}
-
-	public function getStockOrder(): ?StockOrder
-	{
-		return $this->stockOrder;
-	}
-
-	public function setStockOrder(?StockOrder $stockOrder): self
-	{
-		$this->stockOrder = $stockOrder;
-
-		return $this;
-	}
-
-	/**
-	 * @return Collection|OrderItems[]
-	 */
-	public function getOrderItems(): Collection
-	{
-		return $this->orderItems;
-	}
-
-	public function addOrderItem(OrderItems $orderItem): self
-	{
-		if (!$this->orderItems->contains($orderItem)) {
-			$this->orderItems[] = $orderItem;
-			$orderItem->setArticle($this);
-		}
-
-		return $this;
-	}
-
-	public function removeOrderItem(OrderItems $orderItem): self
-	{
-		if ($this->orderItems->contains($orderItem)) {
-			$this->orderItems->removeElement($orderItem);
-			// set the owning side to null (unless already changed)
-			if ($orderItem->getArticle() === $this) {
-				$orderItem->setArticle(null);
-			}
-		}
-
-		return $this;
 	}
 }
