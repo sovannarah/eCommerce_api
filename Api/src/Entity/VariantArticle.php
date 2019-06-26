@@ -32,6 +32,11 @@ class VariantArticle implements \JsonSerializable
 	 */
 	private $varPrice;
 
+	/**
+	 * @ORM\Column(type="string")
+	 */
+	private $type;
+
 	public function getId(): ?int
 	{
 		return $this->id;
@@ -54,6 +59,17 @@ class VariantArticle implements \JsonSerializable
 		return $this->spec;
 	}
 
+	public function setType(string $type): self
+	{
+		$this->type = $type;
+
+		return $this;
+	}
+	public function getType(): ?string
+	{
+		return $this->type;
+	}
+
 	public function setSpec(string $spec): self
 	{
 		$this->spec = $spec;
@@ -72,7 +88,8 @@ class VariantArticle implements \JsonSerializable
 
 		return $this;
 	}
-		/**
+	
+	/**
 	 * Specify data which should be serialized to JSON
 	 * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
 	 * @return mixed data which can be serialized by <b>json_encode</b>,
@@ -84,7 +101,8 @@ class VariantArticle implements \JsonSerializable
 		return [
 			'id' => $this->getId(),
 			'spec' => $this->getSpec(),
-			'var_price' => $this->getVarPrice()
+			'var_price' => $this->getVarPrice(),
+			'type' => $this->getType()
 		];
 	}
 }

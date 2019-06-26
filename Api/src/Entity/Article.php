@@ -258,7 +258,8 @@ class Article implements \JsonSerializable
 		$simpleSerializable = $this->nestedJsonSerialize();
 		$simpleSerializable['category'] =
 			Category::rec_jsonSerializeParent($this->getCategory());
-		$simpleSerializable['variants'] = $this->getVariantArticles()->toArray();
+		// $simpleSerializable['variants'] = $this->getVariantArticles()->toArray();
+		$simpleSerializable['variants'] = $this->orderVariants($this->getVariantArticles()->toArray());
 
 		return $simpleSerializable;
 	}
@@ -274,6 +275,14 @@ class Article implements \JsonSerializable
 			'stock' => $this->getStock(),
 			'images' => $this->_jsonSerializeImages(),
 		];
+	}
+
+	private function orderVariants($variants): array
+	{
+		$array = [];
+		foreach ($variants as $variant)
+			$array[$variant->getType()][] = $variant;
+		return $array;
 	}
 
 	private function _jsonSerializeImages(): array
