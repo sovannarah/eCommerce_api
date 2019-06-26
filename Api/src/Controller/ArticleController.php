@@ -110,10 +110,8 @@ class ArticleController extends MyAbstractController
 		$categoryRepository = $entityManager->getRepository(Category::class);
 		$category = $request->request->get('category');
 		try {
-			$admin = $this->_findAdminOrFail($request);
-			$category = $categoryRepository->findOrFail($category);
-			$article->setCategory($category)
-				->setUser($admin)
+			$article->setCategory($categoryRepository->findOrFail($category))
+				->setUser($this->_findAdminOrFail($request))
 				->setTitle($request->request->get('title'))
 				->setDescription($request->request->get('description'))
 				->setPrice($request->request->get('price'))

@@ -33,7 +33,7 @@ class StockOrder extends Order
 
 	/**
 	 * @param User|null $user
-	 * @return Order
+	 * @return $this
 	 * @throws UnauthorizedHttpException | AccessDeniedHttpException
 	 */
 	public function setUser(?User $user): Order

@@ -22,7 +22,7 @@ class OrderController extends AbsCheckUserController
 	 */
 	public function     getOrders(StockOrderRepository $order): JsonResponse
 	{
-		return($this->json($order->findBy([], ['send' => 'DESC']));
+		return($this->json($order->findBy([], ['send' => 'DESC'])));
 	}
 
 	/**

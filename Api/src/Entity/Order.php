@@ -29,10 +29,6 @@ abstract class Order
 	 * @ORM\Column(type="datetime")
 	 */
 	private $send;
-	/**
-	 * @ORM\Column(type="boolean")
-	 */
-	private $status;
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="orders")
@@ -40,22 +36,6 @@ abstract class Order
 	 */
 	private $user;
 
-
-	/**
-	 * @param bool $status
-	 * @return $this
-	 */
-	public function setStatus(bool $status): self
-	{
-		$this->status = $status;
-
-		return $this;
-	}
-
-	public function getStatus(): ?bool
-	{
-		return $this->status;
-	}
 
 	/**
 	 * @param \DateTimeInterface|null $receive
@@ -148,7 +128,7 @@ abstract class Order
 
 	/**
 	 * @param User|null $user
-	 * @return Order
+	 * @return $this
 	 * @throws UnauthorizedHttpException if $user is null
 	 */
 	public function setUser(?User $user): self
