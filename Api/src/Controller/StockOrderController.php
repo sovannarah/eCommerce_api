@@ -3,8 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\{Article, StockOrder, StockOrderItem};
-use App\Repository\ArticleRepository;
-use App\Repository\StockOrderRepository;
+use App\Repository\{ArticleRepository, StockOrderRepository};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\HttpKernel\Exception\{
@@ -14,10 +13,17 @@ use Symfony\Component\HttpKernel\Exception\{
 	UnauthorizedHttpException};
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class StockOrderController
+ *
+ * @package App\Controller
+ *
+ * @Route("/stock/order", name="stock_order_")
+ */
 class StockOrderController extends MyAbstractController
 {
 	/**
-	 * @Route("/admin/order", name="stock_order")
+	 * @Route("", name="readall", methods={"GET"})
 	 * @param Request $request
 	 * @param StockOrderRepository $sORep
 	 * @return JsonResponse
@@ -33,6 +39,30 @@ class StockOrderController extends MyAbstractController
 		return $this->json($sORep->findBy([], ['send' => 'DESC']));
 	}
 
+	/**
+	 * @Route("/{id}", name="read", methods={"GET"})
+	 * @param Request $request
+	 * @param StockOrder $so
+	 * @return JsonResponse
+	 */
+	public function read(Request $request, StockOrder $so): JsonResponse
+	{
+		try {
+			$this->_findAdminOrFail($request);
+		} catch (AccessDeniedHttpException | UnauthorizedHttpException $e) {
+			return $this->json($e->getMessage(), $e->getStatusCode());
+		}
+
+		return $this->json($so);
+	}
+
+
+	/**
+	 * @Route("", name="create", methods={"POST"})
+	 * @param Request $request
+	 * @param EntityManagerInterface $eManager
+	 * @return JsonResponse
+	 */
 	public function create(Request $request, EntityManagerInterface $eManager): JsonResponse
 	{
 		$so = new StockOrder();
@@ -45,6 +75,7 @@ class StockOrderController extends MyAbstractController
 		$eManager->persist($so);
 		$eManager->flush();
 		$eManager->refresh($so);
+
 		return $this->json($so, 201);
 	}
 
