@@ -29,5 +29,16 @@ class UserOrder extends Order
 		return $this->orderItems;
 	}
 
-
+	/**
+	 * @param UserOrderItem|OrderItem $userOrderItem
+	 * @return $this
+	 * @throws \InvalidArgumentException if $orderItems isn't UserOrderItem
+	 */
+	public function addOrderItem(OrderItem $userOrderItem): Order
+	{
+		if (!$userOrderItem instanceof UserOrderItem) {
+			throw new \InvalidArgumentException('Param $userOrderItem must be '.UserOrderItem::class);
+		}
+		return parent::addOrderItem($userOrderItem);
+	}
 }

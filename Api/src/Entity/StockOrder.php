@@ -43,4 +43,17 @@ class StockOrder extends Order
 		}
 		return parent::setUser($user);
 	}
+
+	/**
+	 * @param StockOrderItem|OrderItem $stockOrderItem
+	 * @return $this
+	 * @throws \InvalidArgumentException if $orderItems isn't StockOrderItem
+	 */
+	public function addOrderItem(OrderItem $stockOrderItem): Order
+	{
+		if (!$stockOrderItem instanceof StockOrderItem) {
+			throw new \InvalidArgumentException('Param $stockOrderItem must be '.StockOrderItem::class);
+		}
+		return parent::addOrderItem($stockOrderItem);
+	}
 }

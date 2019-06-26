@@ -39,6 +39,10 @@ abstract class OrderItem
 		return $this->article;
 	}
 
+	/**
+	 * @param Article|null $article
+	 * @return $this
+	 */
 	public function setArticle(?Article $article): self
 	{
 		$this->article = $article;
@@ -51,6 +55,10 @@ abstract class OrderItem
 		return $this->quantity;
 	}
 
+	/**
+	 * @param int $quantity
+	 * @return $this
+	 */
 	public function setQuantity(int $quantity): self
 	{
 		$this->quantity = $quantity;
@@ -63,7 +71,7 @@ abstract class OrderItem
 	/**
 	 * @param Order|null $order
 	 * @return $this
-	 * @throws \InvalidArgumentException if $order isn't of the given $order isn't of correct subtype
+	 * @throws \InvalidArgumentException if $order isn't of correct subtype
 	 */
 	abstract public function setOrder(?Order $order): self;
 }

@@ -100,14 +100,15 @@ abstract class Order
 	abstract public function getOrderItems(): Collection;
 
 	/**
-	 * @param OrderItem $orderItem
+	 * @param OrderItem $stockOrderItem
 	 * @return $this
+	 * @throws \InvalidArgumentException if $userOrderItem isn't of correct subtype
 	 */
-	public function addOrderItem(OrderItem $orderItem): self
+	protected function addOrderItem(OrderItem $stockOrderItem): self
 	{
-		if (!$this->getOrderItems()->contains($orderItem)) {
-			$this->getOrderItems()[] = $orderItem;
-			$orderItem->setOrder($this);
+		if (!$this->getOrderItems()->contains($stockOrderItem)) {
+			$this->getOrderItems()[] = $stockOrderItem;
+			$stockOrderItem->setOrder($this);
 		}
 
 		return $this;

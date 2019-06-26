@@ -23,16 +23,16 @@ class UserOrderItem extends OrderItem
 	}
 
 	/**
-	 * @param UserOrder|Order|null $order
+	 * @param UserOrder|Order|null $userOrder
 	 * @return $this
-	 * @throws \InvalidArgumentException if $order isn't StockOrder
+	 * @throws \InvalidArgumentException if $userOrder isn't StockOrder
 	 */
-	public function setOrder(?Order $order): OrderItem
+	public function setOrder(?Order $userOrder): OrderItem
 	{
-		if (!$order instanceof UserOrder) {
-			throw new \InvalidArgumentException('Parameter $order to be of type '.UserOrder::class);
+		if (!$userOrder instanceof UserOrder) {
+			throw new \InvalidArgumentException('Parameter $userOrder to be of type '.UserOrder::class);
 		}
-		$this->userOrder = $order;
+		$this->userOrder = $userOrder;
 
 		return $this;
 	}
