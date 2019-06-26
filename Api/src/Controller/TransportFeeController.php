@@ -69,9 +69,9 @@ class TransportFeeController extends MyAbstractController
 				while (isset($value[++$c]))
 				{
 					$recEntity = $this->recMakeTransport($tEntity, $tUnity, $value[$c], $count + 1);
-				    $entity->{'add' .   $tEntity[$count + 1][1]}($recEntity);
-				    $manager = $this->getDoctrine()->getManager();
-				    $manager->persist($entity);
+					$entity->{'add' .   $tEntity[$count + 1][1]}($recEntity);
+					$manager = $this->getDoctrine()->getManager();
+					$manager->persist($entity);
 				}
 				if ($entity instanceof TransportMode)
 					$manager->flush();
