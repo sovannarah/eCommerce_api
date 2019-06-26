@@ -36,15 +36,15 @@ class TransportFeeController extends MyAbstractController
 		$tUnity = ['EUR', 'DOL', 'kg', 'g', 'cm', 'm'];
 		$entity = ['TransportFee','TransportOffer', 'SpecsOffer',
 			'SpecsOfferPrice'];
-//		return ($this->RecMakeTransport($entity, $tUnity, $req->request->all()));
+//		return ($this->recMakeTransport($entity, $tUnity, $req->request->all()));
 	}
 
-	private function    RecMakeTransport($tEnity, $tUnity, $treq, $count = 0)
+	private function    recMakeTransport($tEnity, $tUnity, $treq, $count = 0)
 	{
 		$entity = new $tEnity[$count]();
 		foreach ($treq as $key => $value)
 		{
-			if ($key !== 'value' &&is_array($value))
+			if ($key !== 'value' && is_array($value))
 			{
 				$manager = $this->getDoctrine()->getManager();
 				try
