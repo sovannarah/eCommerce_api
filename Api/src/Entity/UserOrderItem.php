@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class UserOrderItem extends AbstractOrderItem
 {
 	/**
-	 * @ORM\ManyToOne(targetEntity="UserAbstractOrder.php", inversedBy="orderItems")
+	 * @ORM\ManyToOne(targetEntity="UserOrder", inversedBy="orderItems")
 	 */
 	private $userOrder;
 
