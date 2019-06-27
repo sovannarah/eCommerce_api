@@ -11,49 +11,62 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\StockOrderRepository")
  */
-class StockOrder extends Order
+class StockOrder extends AbstractOrder
 {
 	/**
-	 * @ORM\OneToMany(targetEntity="OrderItem", mappedBy="orders", orphanRemoval=true)
+	 * @ORM\OneToMany(targetEntity="StockOrderItem", mappedBy="stockOrder", orphanRemoval=true)
 	 */
 	private $orderItems;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="stockOrders")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $user;
+
 	public function __construct()
-	{
-		$this->orderItems = new ArrayCollection();
-	}
+      	{
+      		$this->orderItems = new ArrayCollection();
+      	}
 
 	/**
-	 * @return Collection|OrderItem[]
+	 * @return Collection|AbstractOrderItem[]
 	 */
 	public function getOrderItems(): Collection
-	{
-		return $this->orderItems;
-	}
+      	{
+      		return $this->orderItems;
+      	}
 
 	/**
 	 * @param User|null $user
-	 * @return Order
-	 * @throws UnauthorizedHttpException | AccessDeniedHttpException
+	 * @return $this
+	 * @throws UnauthorizedHttpException if $user is null
+	 * @throws AccessDeniedHttpException if $user is not admin
 	 */
-	public function setUser(?User $user): Order
-	{
-		if ($user && !$user->isAdmin()) {
-			throw new AccessDeniedHttpException('User must be admin');
-		}
-		return parent::setUser($user);
-	}
+	public function setUser(?User $user): AbstractOrder
+      	{
+
+	        if (!$user) {
+		        throw new UnauthorizedHttpException('', 'User cannot be null');
+	        }
+      		if (!$user->isAdmin()) {
+      			throw new AccessDeniedHttpException('User must be admin');
+      		}
+      		$this->user = $user;
+      		return $this;
+      	}
 
 	/**
-	 * @param StockOrderItem|OrderItem $stockOrderItem
+	 * @param StockOrderItem|AbstractOrderItem $stockOrderItem
 	 * @return $this
 	 * @throws \InvalidArgumentException if $orderItems isn't StockOrderItem
 	 */
-	public function addOrderItem(OrderItem $stockOrderItem): Order
-	{
-		if (!$stockOrderItem instanceof StockOrderItem) {
-			throw new \InvalidArgumentException('Param $stockOrderItem must be '.StockOrderItem::class);
-		}
-		return parent::addOrderItem($stockOrderItem);
-	}
+	public function addOrderItem(AbstractOrderItem $stockOrderItem): AbstractOrder
+      	{
+      		if (!$stockOrderItem instanceof StockOrderItem) {
+      			throw new \InvalidArgumentException('Param $stockOrderItem must be '.StockOrderItem::class);
+      		}
+      		return parent::addOrderItem($stockOrderItem);
+      	}
+
 }

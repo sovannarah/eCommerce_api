@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\{Request,JsonResponse};
 /**
  * Class OrderController
  * @package App\Controller
- * @Route("/order")
+ * @Route("/order_old")
  */
 class OrderController extends AbsCheckUserController
 {

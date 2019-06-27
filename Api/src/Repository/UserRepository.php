@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -28,18 +29,34 @@ class UserRepository extends ServiceEntityRepository
 	public function findAdminByToken($token): ?User
 	{
 		try {
-			return $this->createQueryBuilder('u')
-				->andWhere('u.token = :val')
+			return $this->createFindByTokenQB($token)
 				->andWhere('u.roles LIKE :roles')
-				->andWhere('u.token_expiration > :now')
-				->setParameter('val', $token)
 				->setParameter('roles', '%"ROLE_ADMIN"%')
-				->setParameter('now', new \DateTime())
 				->getQuery()
 				->getOneOrNullResult();
 		} catch (NonUniqueResultException $e) {
 			return null;
 		}
+	}
+
+	public function findOneByToken($token): ?User
+	{
+		try {
+			return $this->createFindByTokenQB($token)
+				->getQuery()
+				->getOneOrNullResult();
+		} catch (NonUniqueResultException $e) {
+			return null;
+		}
+	}
+
+	private function createFindByTokenQB($token): QueryBuilder
+	{
+		return $this->createQueryBuilder('u')
+				->andWhere('u.token = :token')
+				->andWhere('u.token_expiration > :now')
+				->setParameter('token', $token)
+				->setParameter('now', new \DateTime());
 	}
 	// /**
 	//  * @return User[] Returns an array of User objects

@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks
  */
-abstract class Order
+abstract class AbstractOrder implements \JsonSerializable
 {
 	/**
 	 * @ORM\Id()
@@ -29,33 +29,6 @@ abstract class Order
 	 * @ORM\Column(type="datetime")
 	 */
 	private $send;
-	/**
-	 * @ORM\Column(type="boolean")
-	 */
-	private $status;
-
-	/**
-	 * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="orders")
-	 * @ORM\JoinColumn(nullable=false)
-	 */
-	private $user;
-
-
-	/**
-	 * @param bool $status
-	 * @return $this
-	 */
-	public function setStatus(bool $status): self
-	{
-		$this->status = $status;
-
-		return $this;
-	}
-
-	public function getStatus(): ?bool
-	{
-		return $this->status;
-	}
 
 	/**
 	 * @param \DateTimeInterface|null $receive
@@ -95,16 +68,16 @@ abstract class Order
 	}
 
 	/**
-	 * @return Collection|OrderItem[]
+	 * @return Collection|AbstractOrderItem[]
 	 */
 	abstract public function getOrderItems(): Collection;
 
 	/**
-	 * @param OrderItem $stockOrderItem
+	 * @param AbstractOrderItem $stockOrderItem
 	 * @return $this
 	 * @throws \InvalidArgumentException if $userOrderItem isn't of correct subtype
 	 */
-	protected function addOrderItem(OrderItem $stockOrderItem): self
+	public function addOrderItem(AbstractOrderItem $stockOrderItem): self
 	{
 		if (!$this->getOrderItems()->contains($stockOrderItem)) {
 			$this->getOrderItems()[] = $stockOrderItem;
@@ -115,10 +88,10 @@ abstract class Order
 	}
 
 	/**
-	 * @param OrderItem $orderItem
+	 * @param AbstractOrderItem $orderItem
 	 * @return $this
 	 */
-	public function removeOrderItem(OrderItem $orderItem): self
+	public function removeOrderItem(AbstractOrderItem $orderItem): self
 	{
 		if ($this->getOrderItems()->contains($orderItem)) {
 			$this->getOrderItems()->removeElement($orderItem);
@@ -136,8 +109,8 @@ abstract class Order
 	 */
 	public function onPrePersistSetSend(): void
 	{
-		if (!$this->receive) {
-			$this->receive = new \DateTime();
+		if (!$this->send) {
+			$this->send = new \DateTime();
 		}
 	}
 
@@ -148,16 +121,20 @@ abstract class Order
 
 	/**
 	 * @param User|null $user
-	 * @return Order
+	 * @return $this
 	 * @throws UnauthorizedHttpException if $user is null
 	 */
-	public function setUser(?User $user): self
-	{
-		if (!$user) {
-			throw new UnauthorizedHttpException('', 'User cannot be null');
-		}
-		$this->user = $user;
+	abstract public function setUser(?User $user): self;
 
-		return $this;
+	public function jsonSerialize()
+	{
+		$jsonAble = [
+			'userId' => $this->getUser()->getId(),
+			'items' => $this->getOrderItems()->toArray(),
+		];
+		foreach (['id', 'send', 'receive'] as $item) {
+			$jsonAble[$item] = $this->{'get'.ucfirst($item)}();
+		}
+		return $jsonAble;
 	}
 }
