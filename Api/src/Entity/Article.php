@@ -101,7 +101,7 @@ class Article implements \JsonSerializable
     /**
      * @ORM\Column(type="integer")
      */
-    private $kg;
+    private $kg = 0;
 
 	public function getId(): ?int
          	{
