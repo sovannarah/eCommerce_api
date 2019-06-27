@@ -116,8 +116,8 @@ abstract class Order
 	 */
 	public function onPrePersistSetSend(): void
 	{
-		if (!$this->receive) {
-			$this->receive = new \DateTime();
+		if (!$this->send) {
+			$this->send = new \DateTime();
 		}
 	}
 
