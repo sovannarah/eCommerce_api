@@ -10,8 +10,8 @@
 JSON:<br>
 ```json
 {
-    "email": "myadress@mail.com",
-    "password": "userPlainPassword"
+	"email": "myadress@mail.com",
+		"password": "userPlainPassword"
 }
 ```
 
@@ -22,9 +22,9 @@ You'll have to send the token as request header on every request.
 ex:
 ```json
 {
-    "user": User::class,
-    "role": ["ROLE_ADMIN"],
-    "token": "YTozOn[...]29tIjt9"
+	"user": User::class,
+		"role": ["ROLE_ADMIN"],
+		"token": "YTozOn[...]29tIjt9"
 }
 ```
 
@@ -43,8 +43,8 @@ $user.getRoles(); //returns an array of user's roles
 JSON:<br>
 ```json
 {
-    "email": "myadress@mail.com",
-    "password": "userPlainPassword"
+	"email": "myadress@mail.com",
+		"password": "userPlainPassword"
 }
 ```
 
@@ -54,8 +54,8 @@ A JSON containing the user email, and his new id.
 ex:
 ```json
 {
-    "email": "myadress@mail.com",
-    "user_id": 2,
+	"email": "myadress@mail.com",
+		"user_id": 2,
 }
 ```
 
@@ -69,9 +69,9 @@ ex:
 ##### Returns
 ````
 [
-	{
-		//article json ...
-	},
+{
+	//article json ...
+},
 	...
 ]
 ````
@@ -84,22 +84,22 @@ ex:
 ##### Returns
 ````
 {
-	id: int,
+id: int,
 	title: string,
 	description: string,
 	price: int
-	images: [string], //of file names
+		images: [string], //of file names
 	nb_views: int,
 	stock: int|null
-	category: {
-		id: 	int,
+		category: {
+id: 	int,
 		name: 	string,
 		parent: null | {
-		id: 	 int,
-			name: 	 string,
-			parent : null | {/*recursive*/}
+id: 	 int,
+		 name: 	 string,
+		 parent : null | {/*recursive*/}
 		}
-	}
+		}
 }
 ````
 
@@ -121,114 +121,192 @@ Updated Article JSON (like in read `GET`)
 
 
 ### Add Article
-`POST` `/article`
+	`POST` `/article`
 
 #### Sent Data
 ##### Headers
- * `Content-Type`: `multipart/form-data`,
- * `token`: admin token
+	* `Content-Type`: `multipart/form-data`,
+	* `token`: admin token
 
 ##### Body
- * `title`: string
- * `description`: string
- * `price`: int
- * `images`: image file array
- * `nb_views`: int
- * `stock`: int //optional
- * `category`: int //id
- 
+	* `title`: string
+	* `description`: string
+	* `price`: int
+	* `images`: image file array
+	* `nb_views`: int
+	* `stock`: int //optional
+	* `category`: int //id
+
 #### Returns
- * HTTP Status: `201`
- * Body: `{ /* data of new Article (like GET) */ }`
+	* HTTP Status: `201`
+	* Body: `{ /* data of new Article (like GET) */ }`
 
 
 
 ### Update Article
 
-`POST` `/article/{id}`
+	`POST` `/article/{id}`
 
 ##### Headers, Body
 
-Same as 'Add'
+	Same as 'Add'
 
 #### Returns
 
- * HTTP Status: `200`
- * Body: same as 'Add'
+	* HTTP Status: `200`
+	* Body: same as 'Add'
 
 
 
 ### Delete Article
 
-`DELETE` `/article/{id}`
+	`DELETE` `/article/{id}`
 
-Headers must contain token.
+	Headers must contain token.
 
-Empty response
+	Empty response
 
 
 ## *Categories*
 
 ### GET ALL CATEGORIES
 
-**Route: "/category"**<br>
-**Method: GET**<br>
+	**Route: "/category"**<br>
+	**Method: GET**<br>
 
-**Return**:<br>
-Returns a json containing all the main categories and their childrens.
+	**Return**:<br>
+	Returns a json containing all the main categories and their childrens.
 
-ex:
-```json
-[
-    {
-        "1": {
-            "name": "Ecran",
-            "sub": []
-        },
-        "2": {
-            "name": "Peripherique",
-            "sub": [
-                [
-                    {
-                        "id": 7,
-                        "name": "Clavier"
-                    }
-                ],
-                [
-                    {
-                        "id": 8,
-                        "name": "Souris"
-                    }
-                ]
-            ]
-        },
-        "3": {
-            "name": "Ordinateurs",
-            "sub": [
-                [
-                    {
-                        "id": 6,
-                        "name": "Tour"
-                    }
-                ],
-```
-...
+	ex:
+	```json
+	[
+{
+	"1": {
+		"name": "Ecran",
+			"sub": []
+	},
+		"2": {
+			"name": "Peripherique",
+			"sub": [
+				[
+				{
+					"id": 7,
+					"name": "Clavier"
+				}
+				],
+				[
+				{
+					"id": 8,
+					"name": "Souris"
+				}
+				]
+			]
+		},
+		"3": {
+			"name": "Ordinateurs",
+			"sub": [
+				[
+				{
+					"id": 6,
+					"name": "Tour"
+				}
+				],
+				```
+					...
 
 ### GET SPECIFIC CATEGORY AND IT'S ARTICLES
 
-**Route: "/category/{id}"**<br>
-**Method: GET**<br>
+					**Route: "/category/{id}"**<br>
+					**Method: GET**<br>
 
-**Parmeters**:<br>
-URL:<br>
-name | type | description
-id | 
-"id": int: id of category
+					**Parmeters**:<br>
+					URL:<br>
+					name | type | description
+					id | 
+					"id": int: id of category
 
-**Return**:<br>
-Returns a json containing all the main categories and their childrens.
+					**Return**:<br>
+					Returns a json containing all the main categories and their childrens.
 
-ex:
-```json
+					ex:
+					```JSON
+					...
 
-```
+# POST NEW TRANSPORTEUR
+**Route: "/transporteur"** <br>
+**Method: POST<br>
+**STRUCTURE REQUEST:<br>
+{<br>
+	"name": "...",<br>
+	"offer":<br>
+	[<br>
+		{<br>
+			"name": "...",<br>
+			"spec":<br>
+			[<br>
+				{<br>
+					"name": "...",<br>
+					"unity": "...", (Km, Kg, m3)<br>
+					"minValue": "...",<br>
+					"price": "..."<br>
+				},<br>
+				{<br>
+					"name": "...",<br>
+					"unity": "...", (Km, Kg, m3)<br>
+					"minValue": "...",<br>
+					"price": "..."<br>
+				},... <br>
+			]<br>
+		},<br>
+		{<br>
+			"name": "...",<br>
+			"spec":<br>
+			[<br>
+				{<br>
+					"name": "...",<br>
+					"unity": "...", (Km, Kg, m3)<br>
+					"minValue": "...",<br>
+					"price": "..."<br>
+				},... <br>
+			]<br>
+		},... <br>
+	]<br>
+}<br>
+
+				eme": "chronopost",
+					"offer":
+						[
+						{
+							"name": "standart",
+							"spec":
+								[
+								{
+									"name": "distance",
+									"unity": "km",
+									"minValue": 50,
+									"price": 2
+								},
+								{
+									"name": "height",
+									"unity": "cm",
+									"minValue" : 17,
+									"price": 0.5
+								}
+								]
+						},
+						{
+							"name": "expresse",
+							"spec":
+								[
+								{
+									"name": "distance",
+									"unity": "km",
+									"minValue": 10,
+									"price": 1
+								}
+								]
+						}
+				]
+		}xample:
+
+	```
