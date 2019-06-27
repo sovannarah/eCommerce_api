@@ -1,7 +1,7 @@
-## *Articles*
+# *Articles*
 
 
-### Get All
+## Get All
 
 `GET` `/article`
 
@@ -17,7 +17,8 @@
 
 
 
-### Get Article by id
+## Get Article by id
+
 `GET` `/article/{id}`
 
 ##### Returns
@@ -50,7 +51,8 @@ img.src = apiUrl + '/uploads/images' + fileName // '10.43.12.3:8000/uploads/imag
 ````
 
 
-### Increment Article views
+## Increment Article views
+
 `PUT` | `PATCH` `/article/{id}/increment`
 
 Increments the nb_views on an Article 
@@ -59,22 +61,26 @@ Increments the nb_views on an Article
 Updated Article JSON (like in read `GET`)
 
 
-### Add Article
+## Add Article
+
 `POST` `/article`
 
 #### Sent Data
+
 ##### Headers
+
  * `Content-Type`: `multipart/form-data`,
  * `token`: admin token
 
 ##### Body
+
  * `title`: string
  * `description`: string
  * `price`: int
  * `images`: image file array
  * `nb_views`: int
- * `stock`: int //optional
- * `category`: int //id
+ * `stock`: int
+ * `category`: int (id)
  
 #### Returns
  * HTTP Status: `201`
@@ -82,11 +88,11 @@ Updated Article JSON (like in read `GET`)
 
 
 
-### Update Article
+## Update Article
 
 `POST` `/article/{id}`
 
-##### Headers, Body
+#### Sent Data
 
 Same as 'Add'
 
@@ -97,7 +103,7 @@ Same as 'Add'
 
 
 
-### Delete Article
+## Delete Article
 
 `DELETE` `/article/{id}`
 

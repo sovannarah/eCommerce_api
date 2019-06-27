@@ -84,7 +84,7 @@ class ArticleController extends MyAbstractController
 	public function delete(Request $request, Article $article): Response
 	{
 		try {
-			$this->_findAdminOrFail($request);
+			$this->findUserOrFail($request, true);
 		} catch (\Exception $e) {
 			$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
 
