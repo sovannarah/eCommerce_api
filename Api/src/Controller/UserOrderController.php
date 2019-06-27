@@ -2,60 +2,61 @@
 
 namespace App\Controller;
 
-use App\Entity\{AbstractOrder, Article, StockOrder, StockOrderItem};
-use App\Repository\{ArticleRepository, StockOrderRepository};
+use App\Entity\{AbstractOrder, Article, UserOrder, UserOrderItem};
+use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
-use Symfony\Component\HttpKernel\Exception\{
-	AccessDeniedHttpException,
+use Symfony\Component\HttpKernel\Exception\{AccessDeniedHttpException,
 	BadRequestHttpException,
+	HttpException,
 	NotFoundHttpException,
 	UnauthorizedHttpException};
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * Class StockOrderController
+ * Class UserOrderController
  *
  * @package App\Controller
  *
- * @Route("/stock/order", name="stock_order_")
+ * @Route("/order", name="order_")
  */
-class StockOrderController extends MyAbstractController
+class UserOrderController extends MyAbstractController
 {
 	/**
-	 * @Route("", name="readall", methods={"GET"})
+	 * @Route("", name="allof_user", methods={"GET"})
 	 * @param Request $request
-	 * @param StockOrderRepository $sORep
 	 * @return JsonResponse
 	 */
-	public function index(Request $request, StockOrderRepository $sORep): JsonResponse
+	public function index(Request $request): JsonResponse
 	{
 		try {
-			$this->findUserOrFail($request, true);
-		} catch (AccessDeniedHttpException | UnauthorizedHttpException $e) {
+			return $this->json(
+				$this->findUserOrFail($request)->getUserOrders()->toArray()
+			);
+		} catch (UnauthorizedHttpException | AccessDeniedHttpException $e) {
 			return $this->json($e->getMessage(), $e->getStatusCode());
 		}
-
-		return $this->json($sORep->findBy([], ['send' => 'DESC']));
 	}
 
 	/**
 	 * @Route("/{id}", name="read", methods={"GET"})
 	 * @param Request $request
-	 * @param StockOrder $so
+	 * @param UserOrder $order
 	 * @return JsonResponse
 	 */
-	public function read(Request $request, StockOrder $so): JsonResponse
+	public function read(Request $request, UserOrder $order): JsonResponse
 	{
 		try {
-			$this->findUserOrFail($request, true);
-		} catch (AccessDeniedHttpException | UnauthorizedHttpException $e) {
-			return $this->json($e->getMessage(), $e->getStatusCode());
+			$user = $this->findUserOrFail($request);
+			if ($user->getId() !== $order->getUser()->getId()) {
+				throw new AccessDeniedHttpException('Not your order');
+			}
+
+			return $this->json($order);
+		} catch (UnauthorizedHttpException|AccessDeniedHttpException $e) {
+			return $this->errJson($e);
 		}
-
-		return $this->json($so);
 	}
-
 
 	/**
 	 * @Route("", name="create", methods={"POST"})
@@ -65,18 +66,17 @@ class StockOrderController extends MyAbstractController
 	 */
 	public function create(Request $request, EntityManagerInterface $eManager): JsonResponse
 	{
-		$so = new StockOrder();
+		$uo = new UserOrder();
 		try {
-			$so->setUser($this->findUserOrFail($request, true));
-			static::setItems($so, $request, $eManager);
-		} catch (AccessDeniedHttpException | UnauthorizedHttpException $e) {
-			return $this->json($e->getMessage(), $e->getStatusCode());
+			$uo->setUser($this->findUserOrFail($request));
+			static::setItems($uo, $request, $eManager);
+		} catch (HttpException $e) {
+			return $this->errJson($e);
 		}
-		$eManager->persist($so);
+		$eManager->persist($uo);
 		$eManager->flush();
-		$eManager->refresh($so);
-
-		return $this->json($so, 201);
+		$eManager->refresh($uo);
+		return $this->json($uo, 201);
 	}
 
 	/**
@@ -103,11 +103,11 @@ class StockOrderController extends MyAbstractController
 	/**
 	 * @param string[] $itemData containing fields 'id' and 'quantity'
 	 * @param ArticleRepository $articleRep
-	 * @return StockOrderItem
+	 * @return UserOrderItem
 	 * @throws BadRequestHttpException
 	 * @throws NotFoundHttpException if no article found with given id
 	 */
-	private static function initItem($itemData, ArticleRepository $articleRep): StockOrderItem
+	private static function initItem($itemData, ArticleRepository $articleRep): UserOrderItem
 	{
 		if (!isset($itemData['id'], $itemData['quantity'])) {
 			throw new BadRequestHttpException('missing id and/or quantity on an item');
@@ -117,7 +117,7 @@ class StockOrderController extends MyAbstractController
 			throw new NotFoundHttpException('Could not find Article with id: '.$itemData['id']);
 		}
 
-		return (new StockOrderItem())
+		return (new UserOrderItem())
 			->setArticle($item)
 			->setQuantity($itemData['quantity']);
 	}

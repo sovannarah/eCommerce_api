@@ -18,32 +18,43 @@ class StockOrder extends AbstractOrder
 	 */
 	private $orderItems;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="stockOrders")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $user;
+
 	public function __construct()
-	{
-		$this->orderItems = new ArrayCollection();
-	}
+      	{
+      		$this->orderItems = new ArrayCollection();
+      	}
 
 	/**
 	 * @return Collection|AbstractOrderItem[]
 	 */
 	public function getOrderItems(): Collection
-	{
-		return $this->orderItems;
-	}
+      	{
+      		return $this->orderItems;
+      	}
 
 	/**
 	 * @param User|null $user
 	 * @return $this
-	 * @throws UnauthorizedHttpException
+	 * @throws UnauthorizedHttpException if $user is null
 	 * @throws AccessDeniedHttpException if $user is not admin
 	 */
 	public function setUser(?User $user): AbstractOrder
-	{
-		if ($user && !$user->isAdmin()) {
-			throw new AccessDeniedHttpException('User must be admin');
-		}
-		return parent::setUser($user);
-	}
+      	{
+
+	        if (!$user) {
+		        throw new UnauthorizedHttpException('', 'User cannot be null');
+	        }
+      		if (!$user->isAdmin()) {
+      			throw new AccessDeniedHttpException('User must be admin');
+      		}
+      		$this->user = $user;
+      		return $this;
+      	}
 
 	/**
 	 * @param StockOrderItem|AbstractOrderItem $stockOrderItem
@@ -51,10 +62,11 @@ class StockOrder extends AbstractOrder
 	 * @throws \InvalidArgumentException if $orderItems isn't StockOrderItem
 	 */
 	public function addOrderItem(AbstractOrderItem $stockOrderItem): AbstractOrder
-	{
-		if (!$stockOrderItem instanceof StockOrderItem) {
-			throw new \InvalidArgumentException('Param $stockOrderItem must be '.StockOrderItem::class);
-		}
-		return parent::addOrderItem($stockOrderItem);
-	}
+      	{
+      		if (!$stockOrderItem instanceof StockOrderItem) {
+      			throw new \InvalidArgumentException('Param $stockOrderItem must be '.StockOrderItem::class);
+      		}
+      		return parent::addOrderItem($stockOrderItem);
+      	}
+
 }

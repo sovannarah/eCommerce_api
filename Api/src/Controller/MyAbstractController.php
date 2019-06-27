@@ -6,8 +6,11 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\{AccessDeniedHttpException, UnauthorizedHttpException};
+use Symfony\Component\HttpKernel\Exception\{AccessDeniedHttpException,
+	HttpExceptionInterface,
+	UnauthorizedHttpException};
 
 class MyAbstractController extends AbstractController
 {
@@ -48,5 +51,12 @@ class MyAbstractController extends AbstractController
 		}
 
 		return $user;
+	}
+
+	protected function errJson(\Exception $e): JsonResponse
+	{
+		$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
+
+		return $this->json($e->getMessage(), $statusCode);
 	}
 }

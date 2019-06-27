@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserOrderRepository")
@@ -16,18 +17,24 @@ class UserOrder extends AbstractOrder
 	 */
 	private $orderItems;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $user;
+
 	public function __construct()
-	{
-		$this->orderItems = new ArrayCollection();
-	}
+      	{
+      		$this->orderItems = new ArrayCollection();
+      	}
 
 	/**
 	 * @return Collection|AbstractOrderItem[]
 	 */
 	public function getOrderItems(): Collection
-	{
-		return $this->orderItems;
-	}
+      	{
+      		return $this->orderItems;
+      	}
 
 	/**
 	 * @param UserOrderItem|AbstractOrderItem $userOrderItem
@@ -35,10 +42,29 @@ class UserOrder extends AbstractOrder
 	 * @throws \InvalidArgumentException if $orderItems isn't UserOrderItem
 	 */
 	public function addOrderItem(AbstractOrderItem $userOrderItem): AbstractOrder
-	{
-		if (!$userOrderItem instanceof UserOrderItem) {
-			throw new \InvalidArgumentException('Param $userOrderItem must be '.UserOrderItem::class);
-		}
-		return parent::addOrderItem($userOrderItem);
-	}
+      	{
+      		if (!$userOrderItem instanceof UserOrderItem) {
+      			throw new \InvalidArgumentException('Param $userOrderItem must be '.UserOrderItem::class);
+      		}
+      		return parent::addOrderItem($userOrderItem);
+      	}
+	/**
+	 * @param User|null $user
+	 * @return $this
+	 * @throws UnauthorizedHttpException
+	 */
+	public function setUser(?User $user): AbstractOrder
+      	{
+      
+      		if (!$user) {
+      			throw new UnauthorizedHttpException('', 'User cannot be null');
+      		}
+      		$this->user = $user;
+      		return $this;
+      	}
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
 }

@@ -31,13 +31,6 @@ abstract class AbstractOrder implements \JsonSerializable
 	private $send;
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="orders")
-	 * @ORM\JoinColumn(nullable=false)
-	 */
-	private $user;
-
-
-	/**
 	 * @param \DateTimeInterface|null $receive
 	 * @return $this
 	 */
@@ -84,7 +77,7 @@ abstract class AbstractOrder implements \JsonSerializable
 	 * @return $this
 	 * @throws \InvalidArgumentException if $userOrderItem isn't of correct subtype
 	 */
-	protected function addOrderItem(AbstractOrderItem $stockOrderItem): self
+	public function addOrderItem(AbstractOrderItem $stockOrderItem): self
 	{
 		if (!$this->getOrderItems()->contains($stockOrderItem)) {
 			$this->getOrderItems()[] = $stockOrderItem;
@@ -131,15 +124,7 @@ abstract class AbstractOrder implements \JsonSerializable
 	 * @return $this
 	 * @throws UnauthorizedHttpException if $user is null
 	 */
-	public function setUser(?User $user): self
-	{
-		if (!$user) {
-			throw new UnauthorizedHttpException('', 'User cannot be null');
-		}
-		$this->user = $user;
-
-		return $this;
-	}
+	abstract public function setUser(?User $user): self;
 
 	public function jsonSerialize()
 	{
