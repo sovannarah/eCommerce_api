@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\MappedSuperclass
  */
-abstract class OrderItem
+abstract class AbstractOrderItem implements \JsonSerializable
 {
 	/**
 	 * @ORM\Id()
@@ -66,12 +66,21 @@ abstract class OrderItem
 		return $this;
 	}
 
-	abstract public function getOrder(): ?Order;
+	abstract public function getOrder(): ?AbstractOrder;
 
 	/**
-	 * @param Order|null $order
+	 * @param AbstractOrder|null $order
 	 * @return $this
 	 * @throws \InvalidArgumentException if $order isn't of correct subtype
 	 */
-	abstract public function setOrder(?Order $order): self;
+	abstract public function setOrder(?AbstractOrder $order): self;
+
+	public function jsonSerialize()
+	{
+		return [
+			'id' => $this->getId(),
+			'quantity' => $this->getQuantity(),
+			'article' => $this->getArticle()->nestedJsonSerialize(),
+		];
+	}
 }

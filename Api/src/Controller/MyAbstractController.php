@@ -44,7 +44,7 @@ class MyAbstractController extends AbstractController
 			$userRep->findAdminByToken($token) :
 			$userRep->findOneByToken($token);
 		if (!$user) {
-			throw new AccessDeniedHttpException();
+			throw new AccessDeniedHttpException('Bad token');
 		}
 
 		return $user;

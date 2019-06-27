@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks
  */
-abstract class Order
+abstract class AbstractOrder implements \JsonSerializable
 {
 	/**
 	 * @ORM\Id()
@@ -75,16 +75,16 @@ abstract class Order
 	}
 
 	/**
-	 * @return Collection|OrderItem[]
+	 * @return Collection|AbstractOrderItem[]
 	 */
 	abstract public function getOrderItems(): Collection;
 
 	/**
-	 * @param OrderItem $stockOrderItem
+	 * @param AbstractOrderItem $stockOrderItem
 	 * @return $this
 	 * @throws \InvalidArgumentException if $userOrderItem isn't of correct subtype
 	 */
-	protected function addOrderItem(OrderItem $stockOrderItem): self
+	protected function addOrderItem(AbstractOrderItem $stockOrderItem): self
 	{
 		if (!$this->getOrderItems()->contains($stockOrderItem)) {
 			$this->getOrderItems()[] = $stockOrderItem;
@@ -95,10 +95,10 @@ abstract class Order
 	}
 
 	/**
-	 * @param OrderItem $orderItem
+	 * @param AbstractOrderItem $orderItem
 	 * @return $this
 	 */
-	public function removeOrderItem(OrderItem $orderItem): self
+	public function removeOrderItem(AbstractOrderItem $orderItem): self
 	{
 		if ($this->getOrderItems()->contains($orderItem)) {
 			$this->getOrderItems()->removeElement($orderItem);
@@ -139,5 +139,17 @@ abstract class Order
 		$this->user = $user;
 
 		return $this;
+	}
+
+	public function jsonSerialize()
+	{
+		$jsonAble = [
+			'userId' => $this->getUser()->getId(),
+			'items' => $this->getOrderItems()->toArray(),
+		];
+		foreach (['id', 'send', 'receive'] as $item) {
+			$jsonAble[$item] = $this->{'get'.ucfirst($item)}();
+		}
+		return $jsonAble;
 	}
 }

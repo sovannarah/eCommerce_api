@@ -9,10 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserOrderRepository")
  */
-class UserOrder extends Order
+class UserOrder extends AbstractOrder
 {
 	/**
-	 * @ORM\OneToMany(targetEntity="OrderItem", mappedBy="orders", orphanRemoval=true)
+	 * @ORM\OneToMany(targetEntity="UserOrderItem", mappedBy="userOrder", orphanRemoval=true)
 	 */
 	private $orderItems;
 
@@ -22,7 +22,7 @@ class UserOrder extends Order
 	}
 
 	/**
-	 * @return Collection|OrderItem[]
+	 * @return Collection|AbstractOrderItem[]
 	 */
 	public function getOrderItems(): Collection
 	{
@@ -30,11 +30,11 @@ class UserOrder extends Order
 	}
 
 	/**
-	 * @param UserOrderItem|OrderItem $userOrderItem
+	 * @param UserOrderItem|AbstractOrderItem $userOrderItem
 	 * @return $this
 	 * @throws \InvalidArgumentException if $orderItems isn't UserOrderItem
 	 */
-	public function addOrderItem(OrderItem $userOrderItem): Order
+	public function addOrderItem(AbstractOrderItem $userOrderItem): AbstractOrder
 	{
 		if (!$userOrderItem instanceof UserOrderItem) {
 			throw new \InvalidArgumentException('Param $userOrderItem must be '.UserOrderItem::class);

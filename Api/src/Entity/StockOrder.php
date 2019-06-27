@@ -11,10 +11,10 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\StockOrderRepository")
  */
-class StockOrder extends Order
+class StockOrder extends AbstractOrder
 {
 	/**
-	 * @ORM\OneToMany(targetEntity="OrderItem", mappedBy="orders", orphanRemoval=true)
+	 * @ORM\OneToMany(targetEntity="StockOrderItem", mappedBy="stockOrder", orphanRemoval=true)
 	 */
 	private $orderItems;
 
@@ -24,7 +24,7 @@ class StockOrder extends Order
 	}
 
 	/**
-	 * @return Collection|OrderItem[]
+	 * @return Collection|AbstractOrderItem[]
 	 */
 	public function getOrderItems(): Collection
 	{
@@ -34,9 +34,10 @@ class StockOrder extends Order
 	/**
 	 * @param User|null $user
 	 * @return $this
-	 * @throws UnauthorizedHttpException | AccessDeniedHttpException
+	 * @throws UnauthorizedHttpException
+	 * @throws AccessDeniedHttpException if $user is not admin
 	 */
-	public function setUser(?User $user): Order
+	public function setUser(?User $user): AbstractOrder
 	{
 		if ($user && !$user->isAdmin()) {
 			throw new AccessDeniedHttpException('User must be admin');
@@ -45,11 +46,11 @@ class StockOrder extends Order
 	}
 
 	/**
-	 * @param StockOrderItem|OrderItem $stockOrderItem
+	 * @param StockOrderItem|AbstractOrderItem $stockOrderItem
 	 * @return $this
 	 * @throws \InvalidArgumentException if $orderItems isn't StockOrderItem
 	 */
-	public function addOrderItem(OrderItem $stockOrderItem): Order
+	public function addOrderItem(AbstractOrderItem $stockOrderItem): AbstractOrder
 	{
 		if (!$stockOrderItem instanceof StockOrderItem) {
 			throw new \InvalidArgumentException('Param $stockOrderItem must be '.StockOrderItem::class);

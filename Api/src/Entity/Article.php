@@ -73,7 +73,7 @@ class Article implements \JsonSerializable
 	private $stock;
 
 	/**
-	 * @ORM\OneToMany(targetEntity="App\Entity\OrderItem", mappedBy="article")
+	 * @ORM\OneToMany(targetEntity="AbstractOrderItem", mappedBy="article")
 	 */
 	private $orderItems;
 
