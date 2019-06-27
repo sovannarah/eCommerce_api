@@ -296,10 +296,8 @@ class Article implements \JsonSerializable
 	 * @param string $fieldName
 	 * @param mixed $val
 	 */
-	private static function _assertNotNegInt(string $fieldName,&$val): void {
-		if ((!is_int($val) && $val < 0) ||
-			!ctype_digit($val)
-		) {
+	private static function _assertNotNegInt(string $fieldName, &$val): void {
+		if ($val < 0 || (!is_int($val) && !ctype_digit($val))) {
 			throw new InvalidParameterException(
 				$fieldName.' must be a positive or 0 int'
 			);
