@@ -150,7 +150,7 @@ def analyse_init():
 
 @app.route('/distance', methods={"GET"})
 def mesure_distance():
-	print(request)
+	print(request.form)
 	return 'toto'
 
 def get_payload():
