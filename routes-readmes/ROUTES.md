@@ -70,3 +70,84 @@ See [category.md](category.md)
 ## Order (User, Admin)
 
 See [order.md](order.md) 
+
+
+# POST NEW TRANSPORTEUR
+**Route: "/transporteur"** <br>
+**Method: POST<br>
+**STRUCTURE REQUEST:<br>
+{<br>
+	"name": "...",<br>
+	"offer":<br>
+	[<br>
+		{<br>
+			"name": "...",<br>
+			"spec":<br>
+			[<br>
+				{<br>
+					"name": "...",<br>
+					"unity": "...", (Km, Kg, m3)<br>
+					"minValue": "...",<br>
+					"price": "..."<br>
+				},<br>
+				{<br>
+					"name": "...",<br>
+					"unity": "...", (Km, Kg, m3)<br>
+					"minValue": "...",<br>
+					"price": "..."<br>
+				},... <br>
+			]<br>
+		},<br>
+		{<br>
+			"name": "...",<br>
+			"spec":<br>
+			[<br>
+				{<br>
+					"name": "...",<br>
+					"unity": "...", (Km, Kg, m3)<br>
+					"minValue": "...",<br>
+					"price": "..."<br>
+				},... <br>
+			]<br>
+		},... <br>
+	]<br>
+}<br>
+
+				eme": "chronopost",
+					"offer":
+						[
+						{
+							"name": "standart",
+							"spec":
+								[
+								{
+									"name": "distance",
+									"unity": "km",
+									"minValue": 50,
+									"price": 2
+								},
+								{
+									"name": "height",
+									"unity": "cm",
+									"minValue" : 17,
+									"price": 0.5
+								}
+								]
+						},
+						{
+							"name": "expresse",
+							"spec":
+								[
+								{
+									"name": "distance",
+									"unity": "km",
+									"minValue": 10,
+									"price": 1
+								}
+								]
+						}
+				]
+		}xample:
+
+	```
+
