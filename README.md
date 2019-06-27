@@ -21,4 +21,4 @@ symfony server:start --no-tls
 
 ## Usage
 
-See [ROUTES.md](https://gitlab.com/archivaris/ecommerce_api/blob/master/ROUTES.md)
+See [ROUTES.md](routes-readmes/ROUTES.md)

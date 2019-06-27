@@ -111,7 +111,7 @@ class ArticleController extends MyAbstractController
 		$category = $request->request->get('category');
 		try {
 			$article->setCategory($categoryRepository->findOrFail($category))
-				->setUser($this->_findAdminOrFail($request))
+				->setUser($this->findUserOrFail($request, true))
 				->setTitle($request->request->get('title'))
 				->setDescription($request->request->get('description'))
 				->setPrice($request->request->get('price'))
@@ -134,9 +134,9 @@ class ArticleController extends MyAbstractController
 	 * @param Article $article
 	 * @param UploadedFile[] $images
 	 */
-	private static function _updateImages(Article $article, array $images = null): void
+	private static function _updateImages(Article $article, $images): void
 	{
-		$images = $images ?? [];
+		$images = (array) $images;
 		foreach ($images as $image) {
 			if (!getimagesize($image->getRealPath())) {
 				throw new BadRequestHttpException(

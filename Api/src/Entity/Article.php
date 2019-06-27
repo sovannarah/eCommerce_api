@@ -230,12 +230,12 @@ class Article implements \JsonSerializable
 	/**
 	 * @param int|null $stock
 	 * @return $this
-	 * @throws InvalidParameterException if $stock is not null, or positive or zero int
+	 * @throws InvalidParameterException if $stock is not positive or zero int
 	 */
 	public function setStock($stock): self
 	{
 		$stock = $stock !== '' ? $stock : null;
-		static::_assertNotNegInt('stock', $stock, true);
+		static::_assertNotNegInt('stock', $stock);
 		$this->stock = $stock;
 
 		return $this;
@@ -295,15 +295,9 @@ class Article implements \JsonSerializable
 	/**
 	 * @param string $fieldName
 	 * @param mixed $val
-	 * @param bool $allowNull
 	 */
-	private static function _assertNotNegInt(
-		string $fieldName,
-		&$val,
-		bool $allowNull = false
-	): void {
-		if ((!$allowNull && $val === null) ||
-			(!is_int($val) && $val < 0) ||
+	private static function _assertNotNegInt(string $fieldName,&$val): void {
+		if ((!is_int($val) && $val < 0) ||
 			!ctype_digit($val)
 		) {
 			throw new InvalidParameterException(
