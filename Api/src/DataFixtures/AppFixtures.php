@@ -5,7 +5,11 @@ namespace App\DataFixtures;
 use App\Controller\AuthController;
 use App\Entity\Article;
 use App\Entity\Category;
+use App\Entity\StockOrder;
+use App\Entity\StockOrderItem;
 use App\Entity\User;
+use App\Entity\UserOrder;
+use App\Entity\UserOrderItem;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Faker\Factory;
@@ -34,6 +38,10 @@ class AppFixtures extends Fixture
 		$this->_addUsers($populator);
 		static::_addCategories($populator, $generator);
 		static::_addArticles($populator, $generator);
+		$populator->addEntity(UserOrder::class, 10);
+		$populator->addEntity(UserOrderItem::class, 50);
+		$populator->addEntity(StockOrder::class, 10);
+		$populator->addEntity(StockOrderItem::class, 50);
 		$populator->execute();
 	}
 
