@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask, make_response
 from flask import request
 import requests
 import json
+import geopy.distance
 from bs4 import BeautifulSoup
 app = Flask(__name__)
 
@@ -17,8 +18,7 @@ def find_occ_str(str1, str2):
 		while c2 < len2 and c < len1 and str1[c] == str2[c2]:
 			c2 = c2 + 1
 			c = c + 1
-		# if (c2 * 100) / len2 >= 100:
-		if (c * 100 ) / len1 >= 50 and (len2 * 100) / len1 <= 30:
+		if (c * 100) / len1 >= 50 and (len2 * 100) / len1 <= 30:
 			return False
 		if c2 == len2:
 			return True
@@ -105,10 +105,9 @@ def ldlc_engine(elems, bprice, flag):
 
 def ldlc_parse(req_html, article):
 	soup = BeautifulSoup(req_html, "html.parser")
-	flag_better = False
 	print(soup.find_all('h1'))
 	if soup.find('h1') and find_occ_str(soup.find('h1').get_text(), article[0]):
-		flag_better = ldlc_engine(soup.find_all(), article[1])
+		flag_better = ldlc_engine(soup.find_all(), article[1], 0)
 	else:
 		elems = []
 		for elem in soup.find_all('li'):
@@ -125,10 +124,12 @@ def ldlc_parse(req_html, article):
 	return flag_better
 
 
-@app.route('/analyse', methods=['POST'])
+# http://127.0.0.1:5000/ananlyse?title=...&price=...
+@app.route('/analyse', methods=['GET'])
 def analyse_init():
-	if request.form['title'] and request.form['price']:
-		article = [request.form['title'], request.form['price']]
+	quest = request.args.copy()
+	if quest['title'] and quest['price']:
+		article = [quest['title'], quest['price']]
 		table_result = []
 		c = 0
 		# article[0] = '+'.join(article[0].split(' '))
@@ -137,30 +138,50 @@ def analyse_init():
 			print("====== Payload ==========")
 			print(tablePayload[c])
 			req = requests.get(link + article[0], headers=tablePayload[c])
-			if req.status_code != 200:
-				req = requests.get(link + article[0])
 			print("init:")
 			result = table_func[c](req.text, article)
 			if result:
 				table_result.append({'match': tablePayload[c]['Host']})
 			c = c + 1
 		return json.dumps(table_result)
-	return 'Bad Gate'
+	resp = make_response("bad request")
+	resp.mimetype = 'text'
+	resp.status_code = 400
+	return resp
 
 
+# http://127.0.0.1:5000/distance?ad1=...&ad2=...
 @app.route('/distance', methods={"GET"})
 def mesure_distance():
 	print("======== distance init ==========")
-
-	print(request.v)
-	return 'toto'
+	quest = request.args.copy()
+	if not quest['ad1'] or not quest['ad2']:
+		resp = make_response('bad request')
+		return resp
+	enterPoint = 'https://nominatim.openstreetmap.org/search?format=json'
+	gps_coordinate1 = requests.get(enterPoint + '&q=' + quest['ad1']).json()
+	corrdinat1 = (
+		float(gps_coordinate1[0]['lat']),
+		float(gps_coordinate1[0]['lon']))
+	print("===== coord 1 =====")
+	print(corrdinat1[1])
+	gps_coordinate2 = requests.get(enterPoint + '&q=' + quest['ad2']).json()
+	corrdinat2 =(
+		float(gps_coordinate2[0]['lat']),
+		float(gps_coordinate2[0]['lon']))
+	print("===== coord 2 =====")
+	print(corrdinat2)
+	print("====== distance ======")
+	distance = int(geopy.distance.vincenty(corrdinat1, corrdinat2).km * 100)
+	resp = make_response("{ \"distance\":" + str(distance / 100) + "}")
+	resp.mimetype = 'application/json'
+	return resp
 
 def get_payload():
 	return {
 		'Host': '',
 		'User-Agent': 'MesCouillesSurTonNez/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101' +
 		'Firefox/60.0',
-		 #si casse couille changer ca
 		'Accept': 'text/html,application/xhtml+xml',
 		'Accept-Language': 'en-US,en;q=0.5',
 		'Accept-Encoding': 'gzip, deflate, br',
