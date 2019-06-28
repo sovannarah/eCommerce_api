@@ -8,38 +8,49 @@
 ##### Returns
 ````
 [
-	{
-		//article json ...
-	},
-	...
+    {
+        id: int,
+        title: string,
+        description: string,
+        price: int,
+        nb_views: int,
+        stock: int,
+        images: array,
+        category: {
+            id: int,
+            name: string,
+            parent: null | {/*recursive*/}
+        },
+        variants: array
+    },
+    ...
 ]
 ````
 
-
-
-## Get Article by id
+## Get article by id
 
 `GET` `/article/{id}`
 
 ##### Returns
 ````
 {
-	id: int,
-	title: string,
-	description: string,
-	price: int
-	images: [string], //of file names
-	nb_views: int,
-	stock: int
-	category: {
-		id: 	int,
-		name: 	string,
-		parent: null | {
-		id: 	 int,
-			name: 	 string,
-			parent : null | {/*recursive*/}
-		}
-	}
+    id: int,
+    title: string,
+    description: string,
+    price: int
+    images: [string], //of file names
+    nb_views: int,
+    stock: int
+    category: {
+        id: int,
+        name: string,
+        parent: null | {
+        id: int,
+            name: string,
+            parent : null | {/*recursive*/}
+        }
+    },
+    variants: array
 }
 ````
 
@@ -49,7 +60,6 @@
 const fileName = fetchedArticle.images[3]; // filename == 'nn234nkl43.jpg'
 img.src = apiUrl + '/uploads/images' + fileName // '10.43.12.3:8000/uploads/images/nn234nkl43.jpg'
 ````
-
 
 ## Increment Article views
 
@@ -61,9 +71,9 @@ Increments the nb_views on an Article
 Updated Article JSON (like in read `GET`)
 
 
-## Add Article
+## Add / Update Article
 
-`POST` `/article`
+  `POST` Add:  `/article` | Update: `/article/{id}`
 
 #### Sent Data
 
@@ -83,25 +93,8 @@ Updated Article JSON (like in read `GET`)
  * `category`: int (id)
  
 #### Returns
- * HTTP Status: `201`
- * Body: `{ /* data of new Article (like GET) */ }`
-
-
-
-## Update Article
-
-`POST` `/article/{id}`
-
-#### Sent Data
-
-Same as 'Add'
-
-#### Returns
-
- * HTTP Status: `200`
- * Body: same as 'Add'
-
-
+ * Add: HTTP Status: `201` | Update: HTTP Status: `200`
+ * Body: `{ /* new Article data (like GET) */ }`
 
 ## Delete Article
 
@@ -109,4 +102,5 @@ Same as 'Add'
 
 Headers must contain token.
 
+#### Returns
 Empty response
