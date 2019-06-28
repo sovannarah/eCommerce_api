@@ -90,7 +90,7 @@ class Article implements \JsonSerializable
 	public function __construct()
 	{
 		$this->orderItems = new ArrayCollection();
-        $this->variantArticles = new ArrayCollection();
+		$this->variantArticles = new ArrayCollection();
 	}
 
 	public function getId(): ?int
@@ -210,6 +210,10 @@ class Article implements \JsonSerializable
 		return $this->nb_views ?? 0;
 	}
 
+	/**
+	 * @param int|null $nb_views
+	 * @return $this
+	 */
 	public function setNbViews($nb_views): self
 	{
 		if ($nb_views === null) {
@@ -222,6 +226,11 @@ class Article implements \JsonSerializable
 		return $this;
 	}
 
+	/**
+	 * Add one more view to the visited article each time it's calles
+	 * 
+	 * @return $this
+	 */
 	public function incrementNbViews(): self
 	{
 		return $this->setNbViews($this->getNbViews() + 1);
@@ -247,6 +256,47 @@ class Article implements \JsonSerializable
 	}
 
 	/**
+	 * @return Collection|VariantArticle[]
+	 */
+	public function getVariantArticles(): Collection
+	{
+		return $this->variantArticles;
+	}
+
+	public function addVariantArticle(VariantArticle $variantArticle): self
+	{
+		if (!$this->variantArticles->contains($variantArticle)) {
+			$this->variantArticles[] = $variantArticle;
+			$variantArticle->setParent($this);
+		}
+
+		return $this;
+	}
+
+	public function removeVariantArticle(VariantArticle $variantArticle): self
+	{
+		if ($this->variantArticles->contains($variantArticle)) {
+			$this->variantArticles->removeElement($variantArticle);
+			// set the owning side to null (unless already changed)
+			if ($variantArticle->getParent() === $this) {
+				$variantArticle->setParent(null);
+			}
+		}
+	}
+
+	public function getKg(): ?int
+	{
+		return $this->kg;
+	}
+
+	public function setKg(int $kg): self
+	{
+		$this->kg = $kg;
+
+		return $this;
+	}
+
+	/**
 	 * Specify data which should be serialized to JSON
 	 * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
 	 * @return mixed data which can be serialized by <b>json_encode</b>,
@@ -263,7 +313,8 @@ class Article implements \JsonSerializable
 		return $simpleSerializable;
 	}
 
-	public function nestedJsonSerialize(): array
+	// public function nestedJsonSerialize(): array
+	private function nestedJsonSerialize(): array
 	{
 		return [
 			'id' => $this->getId(),
@@ -331,43 +382,5 @@ class Article implements \JsonSerializable
 		}
 	}
 
-    /**
-     * @return Collection|VariantArticle[]
-     */
-    public function getVariantArticles(): Collection
-    {
-        return $this->variantArticles;
-    }
 
-    public function addVariantArticle(VariantArticle $variantArticle): self
-    {
-        if (!$this->variantArticles->contains($variantArticle)) {
-            $this->variantArticles[] = $variantArticle;
-            $variantArticle->setParent($this);
-        }
-
-        return $this;
-    }
-
-    public function removeVariantArticle(VariantArticle $variantArticle): self
-    {
-        if ($this->variantArticles->contains($variantArticle)) {
-            $this->variantArticles->removeElement($variantArticle);
-            // set the owning side to null (unless already changed)
-            if ($variantArticle->getParent() === $this) {
-                $variantArticle->setParent(null);
-            }
-        }
-
-    public function getKg(): ?int
-    {
-        return $this->kg;
-    }
-
-    public function setKg(int $kg): self
-    {
-        $this->kg = $kg;
-
-        return $this;
-    }
 }
