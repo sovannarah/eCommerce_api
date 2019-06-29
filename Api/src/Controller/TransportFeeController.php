@@ -90,15 +90,15 @@ class TransportFeeController extends MyAbstractController
 	private function    TransportEngine(&$entity, $key, $value)
 	{
 		if ($key === 'name')
-				$entity->setName($value);
-			else if ($entity instanceof SpecOffer)
-			{
-				if ($key === 'minValue')
-					$entity->setMinValue($value);
-				else if ($key === 'price')
-					$entity->setPrice($value);
-				else if ($key === 'unity')
-					$entity->setUnity($value);
-			}
+			$entity->setName($value);
+		else if ($entity instanceof SpecOffer)
+		{
+			if ($key === 'minValue')
+				$entity->setMinValue($value);
+			else if ($key === 'price')
+				$entity->setPrice($value);
+			else if ($key === 'unity')
+				$entity->setUnity($value);
+		}
 	}
 }

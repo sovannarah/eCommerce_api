@@ -31,11 +31,15 @@ class UserController extends AbstractController
 	 */
 	public function     is_admin($token, UserRepository $rUser)
 	{
-		$user = $rUser->findBy(['token' => $token])[0];
+		// $user = $rUser->findBy(['token' => $token])[0];
+		$user = $rUser->findBy(['token' => $token]);
+		if(count($user) < 1)
+			return ($this->json("bad Token", 403));
+		$user = $user[0];
 		if (!$user)
-			return ($this->json("bad Token", 404));
+			return ($this->json("bad Token", 403));
 		else if (in_array('ROLE_ADMIN', $user->getRoles()) == true)
 			return ($this->json(true, 200));
-		return ($this->json("bad Roles", 404));
+		return ($this->json("bad Roles", 403));
 	}
 }
