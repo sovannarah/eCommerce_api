@@ -8,6 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
+use JMS\Serializer\Annotation\Type;
+
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
@@ -33,6 +35,7 @@ class User implements UserInterface
 
 	/**
 	 * @ORM\Column(type="json")
+	 * @Type("array")
 	 */
 	private $roles = [];
 
