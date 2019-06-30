@@ -15,15 +15,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class TransportFeeController extends MyAbstractController
 {
 	/**
-//	 * @Route("/transport/fee", name="transport_fee")
+	 * @Route("/", name="getTransporters", methods={"GET})
 	 */
-	public function index()
-	{
-		return $this->json([
-			'message' => 'Welcome to your new controller!',
-			'path' => 'src/Controller/TransportFeeController.php',
-		]);
+	public function		getTransporters() {
+		//
 	}
+
 	/**
 	 * @Route("", name="create transport_fee" ,methods={"POST"})
 	 */
