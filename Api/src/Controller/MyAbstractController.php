@@ -36,25 +36,22 @@ class MyAbstractController extends AbstractController
 	 * @throws AccessDeniedHttpException
 	 * @throws UnauthorizedHttpException
 	 */
-	protected function findUserOrFail(Request $request, UserRepository $urep ,bool $admin = false): User
+	protected function findUserOrFail(Request $request ,bool $admin = false): User
 	{
 		$token = $request->headers->get('token');
 		if (!$token) {
 			throw new UnauthorizedHttpException('', 'Missing Token');
 		}
-		// $userRep = $this->getDoctrine()
-		// 	->getManager()
-		// 	->getRepository(User::class);
+		$userRep = $this->getDoctrine()
+			->getManager()
+			->getRepository(User::class);
 		// $user = $urep->findOneByToken($token);
 		// dd($token);
 		// dd($urep->findBy(['token' => $token])->getEmail());
 		// var_dump($urep->findBy(['token' => $token]));
 		$user = $admin ?
-			$urep->findAdminByToken($token) :
-			$urep->findOneByToken($token);
-		// $user = $admin ?
-		// 	$userRep->findAdminByToken($token) :
-		// 	$userRep->findOneByToken($token);
+			$userRep->findAdminByToken($token) :
+			$userRep->findOneByToken($token);
 		if (!$user) {
 			throw new AccessDeniedHttpException('Bad token');
 		}

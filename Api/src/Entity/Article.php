@@ -313,8 +313,8 @@ class Article implements \JsonSerializable
 		return $simpleSerializable;
 	}
 
-	// public function nestedJsonSerialize(): array
-	private function nestedJsonSerialize(): array
+	public function nestedJsonSerialize(): array
+	// private function nestedJsonSerialize(): array
 	{
 		return [
 			'id' => $this->getId(),

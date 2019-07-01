@@ -56,7 +56,7 @@ class UserController extends MyAbstractController
 	{
 		try {
 			return $this->json(
-				$this->findUserOrFail($request, $rUser)->getEmail()
+				$this->findUserOrFail($request)->getEmail()
 			);
 		} catch (UnauthorizedHttpException | AccessDeniedHttpException $e) {
 			return $this->json($e->getMessage(), $e->getStatusCode());
