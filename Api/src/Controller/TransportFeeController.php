@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class TransportFeeController extends MyAbstractController
 {
 	/**
-	 * @Route("/", name="getTransporters", methods={"GET})
+	 * @Route("/", name="getTransporters", methods={"GET"})
 	 */
 	public function		getTransporters() {
 		//

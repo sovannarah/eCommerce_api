@@ -5,6 +5,7 @@ namespace App\Controller;
 
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,26 +31,34 @@ class MyAbstractController extends AbstractController
 	/**
 	 * @param Request $request
 	 * @param bool $admin weather user should be an admin
+	 * @param UserRepository $urep
 	 * @return User
 	 * @throws AccessDeniedHttpException
 	 * @throws UnauthorizedHttpException
 	 */
-	protected function findUserOrFail(Request $request, bool $admin = false): User
+	protected function findUserOrFail(Request $request, UserRepository $urep ,bool $admin = false): User
 	{
 		$token = $request->headers->get('token');
 		if (!$token) {
 			throw new UnauthorizedHttpException('', 'Missing Token');
 		}
-		$userRep = $this->getDoctrine()
-			->getManager()
-			->getRepository(User::class);
+		// $userRep = $this->getDoctrine()
+		// 	->getManager()
+		// 	->getRepository(User::class);
+		// $user = $urep->findOneByToken($token);
+		// dd($token);
+		// dd($urep->findBy(['token' => $token])->getEmail());
+		// var_dump($urep->findBy(['token' => $token]));
 		$user = $admin ?
-			$userRep->findAdminByToken($token) :
-			$userRep->findOneByToken($token);
+			$urep->findAdminByToken($token) :
+			$urep->findOneByToken($token);
+		// $user = $admin ?
+		// 	$userRep->findAdminByToken($token) :
+		// 	$userRep->findOneByToken($token);
 		if (!$user) {
 			throw new AccessDeniedHttpException('Bad token');
 		}
-
+		// dd($user);
 		return $user;
 	}
 
