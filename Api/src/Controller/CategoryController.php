@@ -8,7 +8,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\{Request, JsonResponse};
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\CategoryRepository;
-use Symfony\Component\HttpKernel\Exception\{HttpExceptionInterface, NotFoundHttpException};
+use Symfony\Component\HttpKernel\Exception\{AccessDeniedHttpException,
+	HttpExceptionInterface,
+	NotFoundHttpException,
+	UnauthorizedHttpException};
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 
 /**
@@ -96,7 +99,7 @@ class CategoryController extends MyAbstractController
 		EntityManagerInterface $manger
 	): JsonResponse {
 		try {
-			$this->_findAdminOrFail($req);
+			$this->findUserOrFail($req, true);
 			$this->_setParentOn($cat, $req->request->get('parentId'));
 		} catch (InvalidParameterException | NotFoundHttpException $e) {
 			$status = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
@@ -153,10 +156,10 @@ class CategoryController extends MyAbstractController
 		Category $cat,
 		EntityManagerInterface $manger
 	): JsonResponse {
-		$token = $request->headers->get('token');
-		if (!$token || !$manger->getRepository(User::class)
-				->findAdminByToken($token)) {
-			return $this->json('invalid token', 401);
+		try {
+			$this->findUserOrFail($request, true);
+		} catch (AccessDeniedHttpException | UnauthorizedHttpException $e) {
+			return $this->json($e->getMessage(), $e->getStatusCode());
 		}
 		$manger->remove($cat);
 		$manger->flush();
