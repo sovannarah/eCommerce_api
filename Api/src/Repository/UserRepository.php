@@ -46,6 +46,7 @@ class UserRepository extends ServiceEntityRepository
 				->getQuery()
 				// ->execute();
 				->getOneOrNullResult();
+			// dd($res);
 			return ($res);
 		} catch (NonUniqueResultException $e) {
 			dd($e);
