@@ -45,17 +45,12 @@ class MyAbstractController extends AbstractController
 		$userRep = $this->getDoctrine()
 			->getManager()
 			->getRepository(User::class);
-		// $user = $urep->findOneByToken($token);
-		// dd($token);
-		// dd($urep->findBy(['token' => $token])->getEmail());
-		// var_dump($urep->findBy(['token' => $token]));
 		$user = $admin ?
 			$userRep->findAdminByToken($token) :
 			$userRep->findOneByToken($token);
 		if (!$user) {
 			throw new AccessDeniedHttpException('Bad token');
 		}
-		// dd($user);
 		return $user;
 	}
 

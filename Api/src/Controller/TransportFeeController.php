@@ -3,9 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\{TransportMode, TransportOffer, SpecOffer};
+use App\Repository\TransportModeRepository;
+//use Symfony\Component\Debug\Exception\UndefinedFunctionException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * Class TransportFeeController
@@ -15,10 +19,21 @@ use Symfony\Component\Routing\Annotation\Route;
 class TransportFeeController extends MyAbstractController
 {
 	/**
-	 * @Route("/", name="getTransporters", methods={"GET"})
+	 * @Route("", name="getTransporters", methods={"GET"})
 	 */
-	public function		getTransporters() {
-		//
+	public function		getTransporters(Request $req,
+		TransportModeRepository $rTransport)
+	{
+		try
+		{
+			$this->findUserOrFail($req, true);
+//			var_dump($rTransport->find(1)->getName());
+//			dd($rTransport->findAll());
+			return ($this->json($rTransport->getAll()));
+		}catch (UnauthorizedHttpException|AccessDeniedException $e)
+		{
+			return ($this->json($e->getMessage(), $e->getStatusCode()));
+		}
 	}
 
 	/**
@@ -34,6 +49,7 @@ class TransportFeeController extends MyAbstractController
 			[SpecOffer::class, 'SpecOffer']];
 		try
 		{
+			$user = $this->findUserOrFail($req, true);
 			return ($this->json($this->recMakeTransport($entity,
 				$tUnity,
 				$req->request->all())
@@ -65,7 +81,8 @@ class TransportFeeController extends MyAbstractController
 				$c = -1;
 				while (isset($value[++$c]))
 				{
-					$recEntity = $this->recMakeTransport($tEntity, $tUnity, $value[$c], $count + 1);
+					$recEntity = $this->recMakeTransport($tEntity, $tUnity,
+						$value[$c], $count + 1);
 					$entity->{'add' .   $tEntity[$count + 1][1]}($recEntity);
 					$manager = $this->getDoctrine()->getManager();
 					$manager->persist($entity);

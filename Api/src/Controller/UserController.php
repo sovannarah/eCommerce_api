@@ -3,10 +3,13 @@
 namespace App\Controller;
 
 use App\Repository\UserRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
-
+use Symfony\Component\HttpKernel\Exception\{AccessDeniedHttpException,
+	BadRequestHttpException,
+	HttpException,
+	NotFoundHttpException,
+	UnauthorizedHttpException};
 /**
  * Class UserController
  * @package App\Controller
@@ -26,28 +29,23 @@ class UserController extends MyAbstractController
 	}
 
 	/**
-	 * @Route("/{token}/check", name="is_admin", methods={"GET"})
-	 * @param $token
+	 * @Route("/isAdmin", name="is_admin", methods={"GET"})
 	 * @param UserRepository $rUser
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
-	public function     is_admin($token, UserRepository $rUser)
+	public function     is_admin(Request $req)
 	{
-		// $user = $rUser->findBy(['token' => $token])[0];
-		$user = $rUser->findBy(['token' => $token]);
-		if(count($user) < 1)
-			return ($this->json("bad Token", 403));
-		$user = $user[0];
-		if (!$user)
-			return ($this->json("bad Token", 403));
-		else if (in_array('ROLE_ADMIN', $user->getRoles()) == true)
-			return ($this->json(true, 200));
-		return ($this->json("bad Roles", 403));
+		try
+		{
+			return ($this->json($this->findUserOrFail($req, true)));
+		} catch (UnauthorizedHttpException | AccessDeniedHttpException $e)
+		{
+			return($this->json($e->getMessage(), $e->getStatusCode()));
+		}
 	}
 
 	/**
 	 * @Route("/checkuser", name="is_user", methods={"GET"})
-	 * @param $token
 	 * @param UserRepository $rUser
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
@@ -58,7 +56,8 @@ class UserController extends MyAbstractController
 			return $this->json(
 				$this->findUserOrFail($request)->getEmail()
 			);
-		} catch (UnauthorizedHttpException | AccessDeniedHttpException $e) {
+		} catch (\Exception $e) {
+
 			return $this->json($e->getMessage(), $e->getStatusCode());
 		}
 	}
