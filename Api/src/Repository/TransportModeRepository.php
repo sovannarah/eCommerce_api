@@ -35,6 +35,7 @@ class TransportModeRepository extends ServiceEntityRepository
 		}
 		return ($resp);
 	}
+
 	public function getOffer($Roffer)
 	{
 		$len = count($Roffer);
