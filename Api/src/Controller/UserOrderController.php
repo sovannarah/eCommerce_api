@@ -64,12 +64,12 @@ class UserOrderController extends MyAbstractController
 	 * @param EntityManagerInterface $eManager
 	 * @return JsonResponse
 	 */
-	public function create(Request $request, EntityManagerInterface $eManager): JsonResponse
+	public function create(Request $request, EntityManagerInterface $eManager, \Swift_Mailer $mailer): JsonResponse
 	{
 		$uo = new UserOrder();
 		try {
 			$uo->setUser($this->findUserOrFail($request));
-			static::setItems($uo, $request, $eManager);
+			static::setItems($uo, $request, $eManager, $mailer);
 		} catch (HttpException $e) {
 			return $this->errJson($e);
 		}
@@ -90,11 +90,13 @@ class UserOrderController extends MyAbstractController
 	private static function setItems(
 		AbstractOrder $order,
 		Request $request,
-		EntityManagerInterface $eManager
+		EntityManagerInterface $eManager,
+		\Swift_Mailer $mailer
 	): void {
 		$articleRep = $eManager->getRepository(Article::class);
 		foreach ($request->request->all() as $itemData) {
-			$sOItem = static::initItem($itemData, $articleRep);
+			$sOItem = static::initItem($itemData, $articleRep, $eManager, $mailer);
+			// dd($sOItem);
 			$order->addOrderItem($sOItem);
 			$eManager->persist($sOItem);
 		}
@@ -107,18 +109,52 @@ class UserOrderController extends MyAbstractController
 	 * @throws BadRequestHttpException
 	 * @throws NotFoundHttpException if no article found with given id
 	 */
-	private static function initItem($itemData, ArticleRepository $articleRep): UserOrderItem
-	{
-		if (!isset($itemData['id'], $itemData['quantity'])) {
+	private static function initItem(
+		$itemData,
+		ArticleRepository $articleRep,
+		EntityManagerInterface $eManager,
+		\Swift_Mailer $mailer
+	): UserOrderItem {
+		if (!isset($itemData['id'], $itemData['quantity']))
 			throw new BadRequestHttpException('missing id and/or quantity on an item');
-		}
-		$item = $articleRep->find($itemData['id']);
-		if (!$item) {
+		$article = $articleRep->find($itemData['id']);
+		if (!$article)
 			throw new NotFoundHttpException('Could not find Article with id: '.$itemData['id']);
-		}
+		$article->setStock($article->getStock()-$itemData['quantity']);
+
+		$eManager->persist($article);
+		$eManager->flush();
+
+		static::checkStock($article, $mailer);
 
 		return (new UserOrderItem())
-			->setArticle($item)
+			->setArticle($article)
 			->setQuantity($itemData['quantity']);
+	}
+
+	private static function	checkStock(Article $article, \Swift_Mailer $mailer) :void
+	{
+		$stock = $article->getStock();
+		echo "Article ".$article->getTitle()." => encore ".$stock." en stock";
+		if ($stock <= 10)
+			static::sentRestockEmailAlert($article->getTitle(), $stock, $mailer);
+	}
+
+	private static function	sentRestockEmailAlert(
+		$title,
+		$stock,
+		\Swift_Mailer $mailer
+	): void {
+		echo " Refiling";
+		$message = (new \Swift_Message("Restock $title"))
+			->setFrom('cyrilcorpcomputers@gmail.com')
+			->setTo('cyrilcorpcomputers@gmail.com')
+			->setBody(
+				"<html>
+					<p>The $title stock is very low ($stock), you may want to restock it on your admin page.</p>
+				</html>",
+				'text/html'
+			);
+		$mailer->send($message);
 	}
 }

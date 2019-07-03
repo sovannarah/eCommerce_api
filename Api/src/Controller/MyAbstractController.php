@@ -36,7 +36,7 @@ class MyAbstractController extends AbstractController
 	 * @throws AccessDeniedHttpException
 	 * @throws UnauthorizedHttpException
 	 */
-	protected function findUserOrFail(Request $request ,bool $admin = false): User
+	protected function findUserOrFail(Request $request, bool $admin = false): User
 	{
 		$token = $request->headers->get('token');
 		if (!$token) {
@@ -45,17 +45,17 @@ class MyAbstractController extends AbstractController
 		$userRep = $this->getDoctrine()
 			->getManager()
 			->getRepository(User::class);
-		// $user = $urep->findOneByToken($token);
+		// $user = $userRep->findOneByToken($token);
 		// dd($token);
-		// dd($urep->findBy(['token' => $token])->getEmail());
-		// var_dump($urep->findBy(['token' => $token]));
+		// dd($userRep->findBy(['token' => $token])->getEmail());
+		// var_dump($userRep->findBy(['token' => $token]));
 		$user = $admin ?
 			$userRep->findAdminByToken($token) :
 			$userRep->findOneByToken($token);
+		// dd($user);
 		if (!$user) {
 			throw new AccessDeniedHttpException('Bad token');
 		}
-		// dd($user);
 		return $user;
 	}
 

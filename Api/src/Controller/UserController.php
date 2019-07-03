@@ -6,6 +6,7 @@ use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Class UserController
@@ -15,14 +16,48 @@ use Symfony\Component\HttpFoundation\Request;
 class UserController extends MyAbstractController
 {
 	/**
-	 * @Route("/user", name="user")
+	 * @Route("/", name="user", methods={"GET"})
+	 * @param Request $request
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
-	public function index()
+	public function index(Request $request)
 	{
-		return $this->json([
-			'message' => 'Welcome to your new controller!',
-			'path' => 'src/Controller/UserController.php',
-		]);
+		$user = ($this->findUserOrFail($request));
+		/* Uncomment next line to debug on Postman */
+		// self::showUserOnPM($user);
+
+		return $this->json($user);
+	}
+
+	/**
+	 * @Route("", name="upd_user", methods={"POST"})
+	 * @param Request $request
+	 * @throws BadRequestHttpException
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 */
+	public function upd_user(Request $request)
+	{
+		$user = ($this->findUserOrFail($request));
+		/* Uncomment next line to debug on Postman */
+		// self::showUserOnPM($user);
+
+		try {
+			foreach($request->request->all() as $key => $value) {
+				$fn = "set".ucfirst($key);
+				$user->$fn($value);
+				// echo("set".ucfirst($key)."(".$value.")<br>");
+			}
+		} catch (\Throwable $e) {
+			$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
+			// throw new BadRequestHttpException($e->getMessage());
+			return $this->json($e->getMessage(), $statusCode);
+		}
+
+		$entityManager = $this->getDoctrine()->getManager();
+		$entityManager->persist($user);
+		$entityManager->flush();
+
+		return $this->json($user);
 	}
 
 	/**
@@ -47,7 +82,6 @@ class UserController extends MyAbstractController
 
 	/**
 	 * @Route("/checkuser", name="is_user", methods={"GET"})
-	 * @param $token
 	 * @param UserRepository $rUser
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
@@ -61,5 +95,25 @@ class UserController extends MyAbstractController
 		} catch (UnauthorizedHttpException | AccessDeniedHttpException $e) {
 			return $this->json($e->getMessage(), $e->getStatusCode());
 		}
+	}
+
+	/**
+	 * Debug function to view user informations and orders on Postman
+	 */
+	private function showUserOnPM($user)
+	{
+		echo("===== USER =====<br>Email: ".$user->getEmail()."<br>Roles:<br>");
+		foreach ($user->getRoles() as $value)
+			echo "- $value<br>";
+		echo("===== ORDERS =====<br>");
+		foreach($user->getUserOrders() as $key => $value) //get orders one by one
+		{
+			echo "=> Commande du: "
+				.$value->getSend()->format('d/m/Y H:i:s')."<br>";
+			foreach($value->getOrderItems() as $key => $value) //get item one by one
+				echo "-> ".$value->getArticle()->getTitle().": "
+					.$value->getQuantity()."<br>";
+		}
+		die();
 	}
 }
