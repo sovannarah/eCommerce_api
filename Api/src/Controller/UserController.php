@@ -6,6 +6,7 @@ use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Class UserController
@@ -24,6 +25,37 @@ class UserController extends MyAbstractController
 		$user = ($this->findUserOrFail($request));
 		/* Uncomment next line to debug on Postman */
 		// self::showUserOnPM($user);
+
+		return $this->json($user);
+	}
+
+	/**
+	 * @Route("", name="upd_user", methods={"POST"})
+	 * @param Request $request
+	 * @throws BadRequestHttpException
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 */
+	public function upd_user(Request $request)
+	{
+		$user = ($this->findUserOrFail($request));
+		/* Uncomment next line to debug on Postman */
+		// self::showUserOnPM($user);
+
+		try {
+			foreach($request->request->all() as $key => $value) {
+				$fn = "set".ucfirst($key);
+				$user->$fn($value);
+				// echo("set".ucfirst($key)."(".$value.")<br>");
+			}
+		} catch (\Throwable $e) {
+			$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
+			// throw new BadRequestHttpException($e->getMessage());
+			return $this->json($e->getMessage(), $statusCode);
+		}
+
+		$entityManager = $this->getDoctrine()->getManager();
+		$entityManager->persist($user);
+		$entityManager->flush();
 
 		return $this->json($user);
 	}
