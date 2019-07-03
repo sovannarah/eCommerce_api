@@ -22,13 +22,9 @@ class UserController extends MyAbstractController
 	public function index(Request $request)
 	{
 		$user = ($this->findUserOrFail($request));
-		foreach($user->getUSerOrder())
-		// dd($user->getUserOrders()->toArray());
+		self::showUserOnPM($user);
 
-		return $this->json([
-			'message' => 'Welcome to your new controller!',
-			'path' => 'src/Controller/UserController.php',
-		]);
+		return $this->json($user);
 	}
 
 	/**
@@ -66,5 +62,25 @@ class UserController extends MyAbstractController
 		} catch (UnauthorizedHttpException | AccessDeniedHttpException $e) {
 			return $this->json($e->getMessage(), $e->getStatusCode());
 		}
+	}
+
+	/**
+	 * Debug function to view user informations and orders on Postman
+	 */
+	private function showUserOnPM($user)
+	{
+		echo("===== USER =====<br>Email: ".$user->getEmail()."<br>Roles:<br>");
+		foreach ($user->getRoles() as $value)
+			echo "- $value<br>";
+		echo("===== ORDERS =====<br>");
+		foreach($user->getUserOrders() as $key => $value) //get orders one by one
+		{
+			echo "=> Commande du: "
+				.$value->getSend()->format('d/m/Y H:i:s')."<br>";
+			foreach($value->getOrderItems() as $key => $value) //get item one by one
+				echo "-> ".$value->getArticle()->getTitle().": "
+					.$value->getQuantity()."<br>";
+		}
+		die();
 	}
 }
