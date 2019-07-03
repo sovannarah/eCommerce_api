@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 /**
  * Class TransportFeeController
  * @package App\Controller
- * @Route("/transport")
+ * @Route("/transport", name="transport")
  */
 class TransportFeeController extends MyAbstractController
 {
@@ -126,26 +126,62 @@ class TransportFeeController extends MyAbstractController
 		$offers = $req['offers'];
 		$c = -1;
 		$offer  = $transport->getTransportOffers();
-		$len = count($offer);
+		$flagNewOffer = false;
+		$len = count($offers);
 		while (++$c < $len)
 		{
-			$offer[$c]->setName($offers[$c]['name']);
-			$specs = $offers[$c]['specs'];
-			$spec = $offer[$c]->getSpecOffers();
+			if (!isset($offers[$c]['id']))
+			{
+				$offernew = new TransportOffer();
+				$offernew->setName($offers[$c]['name']);
+				$flagNewOffer = true;
+			}
+			else
+			{
+				$offer[$c]->setName($offers[$c]['name']);
+				$spec = $offer[$c]->getSpecOffers();
+			}
 			$c2 = -1;
-			$len2 = count($spec);
+			$specs = $offers[$c]['specs'];
+			$len2 = count($specs);
 			while (++$c2 < $len2)
 			{
-				$spec[$c2]->setName($specs[$c2]['name']);
-				$spec[$c2]->setUnity($specs[$c2]['unity']);
-				$spec[$c2]->setMinValue($specs[$c2]['minValue']);
-				$spec[$c2]->setPrice( $specs[$c2]['price']);
+				if ($flagNewOffer === true)
+				{
+					$specNew = new SpecOffer();
+					$specNew->setName($specs[$c2]['name']);
+					$specNew->setUnity($specs[$c2]['unity']);
+					$specNew->setMinValue($specs[$c2]['minValue']);
+					$specNew->setPrice( $specs[$c2]['price']);
+					$offernew->addSpecOffer($specNew);
+				}
+				else if (!isset($specs[$c2]['id']))
+				{
+					$specNew = new SpecOffer();
+					$specNew->setName($specs[$c2]['name']);
+					$specNew->setUnity($specs[$c2]['unity']);
+					$specNew->setMinValue($specs[$c2]['minValue']);
+					$specNew->setPrice( $specs[$c2]['price']);
+					$offer[$c]->addSpecOffer($specNew);
+				}
+				else
+				{
+					$spec[$c2]->setName($specs[$c2]['name']);
+					$spec[$c2]->setUnity($specs[$c2]['unity']);
+					$spec[$c2]->setMinValue($specs[$c2]['minValue']);
+					$spec[$c2]->setPrice( $specs[$c2]['price']);
+				}
+			}
+			if ($flagNewOffer === true)
+			{
+				$transport->addTransportOffer($offernew);
+				$flagNewOffer = false;
 			}
 		}
 		$manager = $this->getDoctrine()->getManager();
 		$manager->persist($transport);
 		$manager->flush();
-		$manager->refresh($transport);
+//		$manager->refresh($transport);
 	}
 
 	/**
