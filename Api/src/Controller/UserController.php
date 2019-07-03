@@ -15,10 +15,16 @@ use Symfony\Component\HttpFoundation\Request;
 class UserController extends MyAbstractController
 {
 	/**
-	 * @Route("/user", name="user")
+	 * @Route("/", name="user", methods={"GET"})
+	 * @param Request $request
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
-	public function index()
+	public function index(Request $request)
 	{
+		$user = ($this->findUserOrFail($request));
+		foreach($user->getUSerOrder())
+		// dd($user->getUserOrders()->toArray());
+
 		return $this->json([
 			'message' => 'Welcome to your new controller!',
 			'path' => 'src/Controller/UserController.php',
@@ -47,7 +53,6 @@ class UserController extends MyAbstractController
 
 	/**
 	 * @Route("/checkuser", name="is_user", methods={"GET"})
-	 * @param $token
 	 * @param UserRepository $rUser
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
