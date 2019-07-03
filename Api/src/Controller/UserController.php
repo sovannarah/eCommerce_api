@@ -22,7 +22,8 @@ class UserController extends MyAbstractController
 	public function index(Request $request)
 	{
 		$user = ($this->findUserOrFail($request));
-		self::showUserOnPM($user);
+		/* Uncomment next line to debug on Postman */
+		// self::showUserOnPM($user);
 
 		return $this->json($user);
 	}
