@@ -67,18 +67,60 @@ class ExcelController extends AbstractController
 
 	private function	fillOrders (&$sheet)
 	{
+		//headers
+		$sheet->setCellValue('A1', 'User email')->setCellValue('B1', 'Sent at')
+			->setCellValue('C1', 'To adress')->setCellValue('D1', 'Price');
+		$sheet->getStyle("A1:D1")->getFont()->setBold(true);
+		
 		$rOrders = $this->getDoctrine()->getRepository(UserOrder::class)->findAll();
-		$cellRow = 0;
+		$cellRow = 1;
 		$cellCol = 1;
-
+		
 		foreach ($rOrders as $order) {
 			$cellCol = 1;
 			$cellRow++;
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($order->getUser()->getEmail());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($order->getSend());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue("Adresse");
-			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue("Montant TTC");
+			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($order->getPrice())
+				->getStyle()
+				->getNumberFormat()
+				->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_CURRENCY_EUR);
 		}
+		
+		//total
+		$form = "=SUM(D2:D".$cellRow.")";
+		$sheet->getCellByColumnAndRow(1, ++$cellRow)->setValue("TOTAL");
+		$sheet->getCellByColumnAndRow(4, $cellRow)->setValue($form)->getStyle()
+			->getNumberFormat()
+			->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_CURRENCY_EUR);
+
+		/* $styleArray = array(
+			'font' => array(
+				'bold' => true,
+				'italic' => true
+			),
+			'borders' => array(
+				'outline' => array(
+					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+					'color' => array('argb' => 'FFFF0000'),
+				),
+				'top' => array(
+					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+					'color' => array(
+						'rgb' => '808080'
+					)
+				)
+			)
+		); */
+		// $sheet->getStyle('B3')->applyFromArray($styleArray);
+
+		$sheet->getStyle("A".$cellRow.":D".$cellRow)->getBorders()
+			->getTop()
+			->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM)
+			->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('00000000'));
+		$sheet->getStyle("A".$cellRow.":D".$cellRow)->getFont()->setBold(true);
+
 		$sheet->getColumnDimension('A')->setAutoSize(true);
 		$sheet->getColumnDimension('B')->setAutoSize(true);
 		$sheet->getColumnDimension('C')->setAutoSize(true);
@@ -116,3 +158,21 @@ class ExcelController extends AbstractController
 
 	} */
 }
+
+/* 
+BORDER STYLES:
+	BORDER_NONE             = 'none';
+	BORDER_DASHDOT          = 'dashDot';
+	BORDER_DASHDOTDOT       = 'dashDotDot';
+	BORDER_DASHED           = 'dashed';
+	BORDER_DOTTED           = 'dotted';
+	BORDER_DOUBLE           = 'double';
+	BORDER_HAIR             = 'hair';
+	BORDER_MEDIUM           = 'medium';
+	BORDER_MEDIUMDASHDOT    = 'mediumDashDot';
+	BORDER_MEDIUMDASHDOTDOT = 'mediumDashDotDot';
+	BORDER_MEDIUMDASHED     = 'mediumDashed';
+	BORDER_SLANTDASHDOT     = 'slantDashDot';
+	BORDER_THICK            = 'thick';
+	BORDER_THIN             = 'thin';
+*/
