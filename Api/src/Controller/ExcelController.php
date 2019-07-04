@@ -16,6 +16,8 @@ use App\Entity\User,
 	App\Entity\Article,
 	App\Repository\ArticleRepository;
 
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
 /**
  * @Route("/excel", name="excel")
  */
@@ -45,6 +47,8 @@ class ExcelController extends AbstractController
 		$writer = new Xlsx($spreadsheet);
 		$excelFilepath =  $publicDirectory . '/CyrilCorpComputers.xlsx';
 		$writer->save($excelFilepath);
+		// return new BinaryFileResponse($excelFilepath);
+		return $this->json(["file" => 'CyrilCorpComputers.xlsx']);
 		return $this->json("Excel generated succesfully", 201);
 	}
 
