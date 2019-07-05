@@ -21,6 +21,9 @@ class TransportFeeController extends MyAbstractController
 {
 	/**
 	 * @Route("", name="getTransporters", methods={"GET"})
+	 * @param Request $req
+	 * @param TransportModeRepository $rTransport
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
 	public function		getTransporters(Request $req,
 		TransportModeRepository $rTransport)
@@ -102,10 +105,12 @@ class TransportFeeController extends MyAbstractController
 			return ($this->json($e->getMessage(), $e->getStatusCode()));
 		}
 	}
+
 	/**
 	 * @Route("/{id}", name="update_transport", methods={"PUT"})
 	 * @param Request $req
 	 * @param TransportMode $transport
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
 	public function     update(Request $req, TransportMode $transport)
 	{
@@ -186,6 +191,8 @@ class TransportFeeController extends MyAbstractController
 
 	/**
 	 * @Route("", name="create_transport_fee" ,methods={"POST"})
+	 * @param Request $req
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
 	public function     create(Request $req)
 	{

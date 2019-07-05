@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Exception\{AccessDeniedHttpException,
 	NotFoundHttpException,
 	UnauthorizedHttpException};
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpClient\HttpClient;
 
 /**
  * Class UserOrderController
@@ -27,6 +28,7 @@ class UserOrderController extends MyAbstractController
 	 * @param Request $request
 	 * @return JsonResponse
 	 */
+	private $address = ['27 rue saint-ambroise 75011'];
 	public function index(Request $request): JsonResponse
 	{
 		try {
@@ -36,6 +38,21 @@ class UserOrderController extends MyAbstractController
 		} catch (UnauthorizedHttpException | AccessDeniedHttpException $e) {
 			return $this->json($e->getMessage(), $e->getStatusCode());
 		}
+	}
+
+	/**
+	 * @Route("/check", name="check_address", methods={"POST"});
+	 * @param Request $quest
+	 * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
+	 */
+	public function     getPriceOnAdresss(Request $quest)
+	{
+		var_dump($quest->request->all());
+		$adress2 = '&ad2=';
+		$reqText = 'http://127.0.0.1:5000/distance?ad1=' + $this->address + $adress2;
+		$httpClient = HttpClient::create();
+		$request = $httpClient->request('GET', $reqText);
+
 	}
 
 	/**
@@ -51,7 +68,6 @@ class UserOrderController extends MyAbstractController
 			if ($user->getId() !== $order->getUser()->getId()) {
 				throw new AccessDeniedHttpException('Not your order');
 			}
-
 			return $this->json($order);
 		} catch (UnauthorizedHttpException|AccessDeniedHttpException $e) {
 			return $this->errJson($e);

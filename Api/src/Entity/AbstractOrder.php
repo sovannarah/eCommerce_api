@@ -26,7 +26,7 @@ abstract class AbstractOrder implements \JsonSerializable
 	 */
 	private $receive;
 	/**
-	 * @ORM\Column(type="datetime")
+	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	private $send;
 
