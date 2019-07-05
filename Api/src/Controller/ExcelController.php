@@ -63,10 +63,12 @@ class ExcelController extends AbstractController
 			$cellRow++;
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($user->getEmail());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($user->getRoles()[0]);
+			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue(self::fillAddress($user->getAddress()));
 		}
 		// self::autoSize($sheet);
 		$sheet->getColumnDimension('A')->setAutoSize(true);
 		$sheet->getColumnDimension('B')->setAutoSize(true);
+		$sheet->getColumnDimension('C')->setAutoSize(true);
 	}
 
 	private function	fillOrders (&$sheet)
@@ -156,6 +158,13 @@ class ExcelController extends AbstractController
 		$sheet->getColumnDimension('F')->setAutoSize(true);
 		$sheet->getColumnDimension('G')->setAutoSize(true);
 		// die();
+	}
+
+	private function fillAddress($address) {
+		if ($address)
+			return $address->getStreet().", ".$address->getPc();
+		else
+			return "Undefined";
 	}
 
 	/* private function autoSize(&$sheet) {

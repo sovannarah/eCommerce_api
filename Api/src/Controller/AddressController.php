@@ -38,13 +38,13 @@ class AddressController extends MyAbstractController
 		if($user->getAddress()) {
 			$address = $user->getAddress();
 			$address->setStreet($street);
-			$address->setPc($cp);
+			$address->setPc($pc);
 		}
 		else {
 			$address = new Address();
 			$address->setUser($user);
 			$address->setStreet($street);
-			$address->setPc($cp);
+			$address->setPc($pc);
 		}
 		$em = $this->getDoctrine()->getManager();
 		$em->persist($address);
