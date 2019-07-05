@@ -9,14 +9,14 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 /**
  * Class UserController
  * @package App\Controller
- * @Route("/user")
+ * @Route("/user", name="user")
  */
 class UserController extends MyAbstractController
 {
 	/**
 	 * Send user email and role if user exists
 	 * 
-	 * @Route("/", name="user", methods={"GET"})
+	 * @Route("", name="get_user", methods={"GET"})
 	 * @param Request $request
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */

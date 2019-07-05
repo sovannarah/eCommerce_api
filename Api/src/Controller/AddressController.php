@@ -7,21 +7,28 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use App\Entity\Address;
 
+
 /**
  * @Route("/address", name="address")
  */
 class AddressController extends MyAbstractController
 {
 	/**
-	 * @Route("/", name="address")
+	 * @Route("", name="get_address", methods={"GET"})
 	 */
 	public function index(Request $request)
 	{
+		try
+		{
 		$user = $this->findUserOrFail($request);
 		if($user->getAddress())
 			return $this->json(self::_json($user->getAddress()));
 		else
 			return $this->json(null);
+		}catch (\Exeption $e)
+		{
+			return ($this->json("bad request", 400));
+		}
 	}
 
 	/**
@@ -55,6 +62,8 @@ class AddressController extends MyAbstractController
 
 	private function _json(Address $address)
 	{
+		if ($address === null)
+			return null;
 		return [
 			'street' => $address->getStreet(),
 			'pc' => $address->getPc()
