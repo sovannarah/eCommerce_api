@@ -23,23 +23,23 @@ class UserOrder extends AbstractOrder
 	 */
 	private $user;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $price;
+	/**
+	 * @ORM\Column(type="integer")
+	 */
+	private $price;
 
 	public function __construct()
-         	{
-         		$this->orderItems = new ArrayCollection();
-         	}
+	{
+		$this->orderItems = new ArrayCollection();
+	}
 
 	/**
 	 * @return Collection|AbstractOrderItem[]
 	 */
 	public function getOrderItems(): Collection
-         	{
-         		return $this->orderItems;
-         	}
+	{
+		return $this->orderItems;
+	}
 
 	/**
 	 * @param UserOrderItem|AbstractOrderItem $userOrderItem
@@ -47,11 +47,11 @@ class UserOrder extends AbstractOrder
 	 * @throws \InvalidArgumentException if $orderItems isn't UserOrderItem
 	 */
 	public function addOrderItem(AbstractOrderItem $userOrderItem): AbstractOrder
-         	{
-         		if (!$userOrderItem instanceof UserOrderItem)
-         			throw new \InvalidArgumentException('Param $userOrderItem must be '.UserOrderItem::class);
-         		return parent::addOrderItem($userOrderItem);
-         	}
+	{
+		if (!$userOrderItem instanceof UserOrderItem)
+			throw new \InvalidArgumentException('Param $userOrderItem must be '.UserOrderItem::class);
+		return parent::addOrderItem($userOrderItem);
+	}
 
 	/**
 	 * @param User|null $user
@@ -59,27 +59,27 @@ class UserOrder extends AbstractOrder
 	 * @throws UnauthorizedHttpException
 	 */
 	public function setUser(?User $user): AbstractOrder
-         	{
-         		if (!$user)
-         			throw new UnauthorizedHttpException('', 'User cannot be null');
-         		$this->user = $user;
-         		return $this;
-         	}
+	{
+		if (!$user)
+			throw new UnauthorizedHttpException('', 'User cannot be null');
+		$this->user = $user;
+		return $this;
+	}
 
 	public function getUser(): ?User
-         	{
-         		return $this->user;
-         	}
+	{
+		return $this->user;
+	}
 
-    public function getPrice(): ?int
-    {
-        return $this->price;
-    }
+	public function getPrice(): ?int
+	{
+		return $this->price;
+	}
 
-    public function setPrice(int $price): self
-    {
-        $this->price = $price;
+	public function setPrice(int $price): self
+	{
+		$this->price = $price;
 
-        return $this;
-    }
+		return $this;
+	}
 }

@@ -14,6 +14,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class UserController extends MyAbstractController
 {
 	/**
+	 * Send user email and role if user exists
+	 * 
 	 * @Route("/", name="user", methods={"GET"})
 	 * @param Request $request
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
@@ -23,11 +25,12 @@ class UserController extends MyAbstractController
 		$user = ($this->findUserOrFail($request));
 		/* Uncomment next line to debug on Postman */
 		// self::showUserOnPM($user);
-
-		return $this->json($user);
+		return $this->json(self::_jsonUser($user));
 	}
 
 	/**
+	 * Update user informations
+	 * 
 	 * @Route("", name="upd_user", methods={"POST"})
 	 * @param Request $request
 	 * @throws BadRequestHttpException
@@ -59,6 +62,8 @@ class UserController extends MyAbstractController
 	}
 
 	/**
+	 * Check if user is admin
+	 * 
 	 * @Route("/isAdmin", name="is_admin", methods={"GET"})
 	 * @param UserRepository $rUser
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
@@ -75,6 +80,8 @@ class UserController extends MyAbstractController
 	}
 
 	/**
+	 * Check if user is logged
+	 * 
 	 * @Route("/checkuser", name="is_user", methods={"GET"})
 	 * @param UserRepository $rUser
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
@@ -110,5 +117,12 @@ class UserController extends MyAbstractController
 					.$value->getQuantity()."<br>";
 		}
 		die();
+	}
+
+	private function _jsonUser($user){
+		return [
+			'email' => $user->getEmail(),
+			'roles' => $user->getRoles(),
+		];
 	}
 }
