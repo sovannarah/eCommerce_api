@@ -12,6 +12,7 @@
         "nelmio/cors-bundle": "^1.5",
         "phpoffice/phpspreadsheet": "^1.8",
         "sensio/framework-extra-bundle": "^5.3",
+        "stripe/stripe-php": "^6.40",
         "symfony/console": "4.3.*",
         "symfony/dotenv": "4.3.*",
         "symfony/filesystem": "4.3.*",

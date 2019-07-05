@@ -227,8 +227,8 @@ class Article implements \JsonSerializable
 	}
 
 	/**
-	 * Add one more view to the visited article each time it's calles
-	 * 
+	 * Add one more view to the visited article each time it's called
+	 *
 	 * @return $this
 	 */
 	public function incrementNbViews(): self
@@ -324,6 +324,7 @@ class Article implements \JsonSerializable
 			'nb_views' => $this->getNbViews(),
 			'stock' => $this->getStock(),
 			'images' => $this->_jsonSerializeImages(),
+			'kg' => $this->getKg(),
 		];
 	}
 

@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Entity\{AbstractOrder, Article, UserOrder, UserOrderItem};
 use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Stripe\{Charge, Error\Base as StripeException, Stripe};
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
-use Symfony\Component\HttpKernel\Exception\{AccessDeniedHttpException,
+use Symfony\Component\HttpKernel\Exception\{
+	AccessDeniedHttpException,
 	BadRequestHttpException,
 	HttpException,
 	NotFoundHttpException,
@@ -15,10 +17,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpClient\HttpClient;
 
 /**
- * Class UserOrderController
- *
- * @package App\Controller
- *
  * @Route("/order", name="order_")
  */
 class UserOrderController extends MyAbstractController
@@ -68,6 +66,7 @@ class UserOrderController extends MyAbstractController
 			if ($user->getId() !== $order->getUser()->getId()) {
 				throw new AccessDeniedHttpException('Not your order');
 			}
+
 			return $this->json($order);
 		} catch (UnauthorizedHttpException|AccessDeniedHttpException $e) {
 			return $this->errJson($e);
@@ -97,7 +96,7 @@ class UserOrderController extends MyAbstractController
 
 	/**
 	 * @param AbstractOrder $order
-	 * @param Request $request
+	 * @param string[][] $itemsDatas
 	 * @param EntityManagerInterface $eManager
 	 * @throws BadRequestHttpException
 	 * @throws NotFoundHttpException
@@ -173,4 +172,52 @@ class UserOrderController extends MyAbstractController
 			);
 		$mailer->send($message);
 	}
+
+	/**
+	 * @Route("/{id}/pay", methods={"POST"})
+	 * @param Request $request
+	 * @param UserOrder $uo
+	 * @return JsonResponse
+	 */
+	private function pay(Request $request, UserOrder $uo): JsonResponse
+	{
+		if ($uo->getSend()) {
+			throw new BadRequestHttpException('Order already payed');
+		}
+		Stripe::setApiKey('sk_test_Rp1hCFXgQw3x7ZnR8NvBP0aq000x2BmKPK');
+		$email = $request->request->get('email');
+		if (!$email) {
+			$user = $uo->getUser();
+			if (!$user) {
+				return $this->json('Must supply email for anonymous user', 400);
+			}
+			$email = $user->getEmail();
+		}
+		$uo->setTotal($uo->getTotal() + static::getTransportPrice($request));
+		try {
+			return $this->json(Charge::create(
+				[
+					'amount' => $uo->getTotal(),
+					'currency' => 'eur',
+					'receipt_email' => $email,
+					'source' => $request->request->get('cardToken'),
+				]
+			));
+		} catch (StripeException $e) {
+			return $this->json($e->getJsonBody(), $e->getHttpStatus());
+		}
+	}
+
+	/**
+	 * @param Request $request
+	 * @return int
+	 * @throws BadRequestHttpException
+	 * @throws NotFoundHttpException
+	 */
+	private static function getTransportPrice(Request $request): int
+	{
+		//TODO get price using id (with validation)
+		return 0;
+	}
+
 }
