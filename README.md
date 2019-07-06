@@ -19,6 +19,24 @@ Launch the server
 symfony server:start --no-tls
 ```
 
-## Usage
+# Routes to use
 
-See [ROUTES.md](routes-readmes/ROUTES.md)
+## Registration
+
+See [registration.md](routes-readmes/registration.md)
+
+## Articles
+
+See [article.md](routes-readmes/article.md)
+
+## Categories
+
+See [category.md](routes-readmes/category.md) 
+
+## Order (User, Admin)
+
+See [order.md](routes-readmes/order.md) 
+
+## Order (User, Admin)
+
+See [transporter.md](routes-readmes/transporter.md) 
