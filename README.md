@@ -40,3 +40,7 @@ See [order.md](routes-readmes/order.md)
 ## Order (User, Admin)
 
 See [transporter.md](routes-readmes/transporter.md) 
+
+## Unclassable stuff
+
+See [other.md](routes-readmes/other.md)
