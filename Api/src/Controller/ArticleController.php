@@ -133,6 +133,10 @@ class ArticleController extends MyAbstractController
 
 			return $this->json($e->getMessage(), $statusCode);
 		}
+		$showOnSlider = $request->request->getBoolean('showOnSlider', null);
+		if ($showOnSlider !== null) {
+			$article->setShowOnSlider($showOnSlider);
+		}
 		$entityManager->persist($article);
 		$entityManager->flush();
 		$entityManager->refresh($article);
