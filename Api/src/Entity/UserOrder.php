@@ -23,11 +23,6 @@ class UserOrder extends AbstractOrder
 	 */
 	private $user;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $price;
-
 	public function __construct()
       	{
       		$this->orderItems = new ArrayCollection();
@@ -71,16 +66,4 @@ class UserOrder extends AbstractOrder
          	{
          		return $this->user;
          	}
-
-    public function getPrice(): ?int
-    {
-        return $this->price;
-    }
-
-    public function setPrice(int $price): self
-    {
-        $this->price = $price;
-
-        return $this;
-    }
 }

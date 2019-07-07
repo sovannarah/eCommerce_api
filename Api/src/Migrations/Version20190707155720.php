@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20190705222424 extends AbstractMigration
+final class Version20190707155720 extends AbstractMigration
 {
     public function getDescription() : string
     {
@@ -22,7 +22,7 @@ final class Version20190705222424 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE spec_offer ADD min_price INT NOT NULL');
+        $this->addSql('ALTER TABLE user_order DROP price');
     }
 
     public function down(Schema $schema) : void
@@ -30,6 +30,6 @@ final class Version20190705222424 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE spec_offer DROP min_price');
+        $this->addSql('ALTER TABLE user_order ADD price INT NOT NULL');
     }
 }
