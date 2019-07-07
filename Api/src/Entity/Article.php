@@ -315,7 +315,6 @@ class Article implements \JsonSerializable
 		$simpleSerializable['category'] =
 			Category::rec_jsonSerializeParent($this->getCategory());
 		$simpleSerializable['variants'] = $this->orderVariants();
-		$simpleSerializable['showOnSlider'] = $this->getShowOnSlider();
 
 		return $simpleSerializable;
 	}
@@ -331,6 +330,7 @@ class Article implements \JsonSerializable
 			'nb_views' => $this->getNbViews(),
 			'stock' => $this->getStock(),
 			'images' => $this->_jsonSerializeImages(),
+			'showOnSlider' => $this->getShowOnSlider(),
 		];
 	}
 
