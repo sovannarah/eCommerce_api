@@ -19,27 +19,22 @@ class UserOrder extends AbstractOrder
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="App\Entity\User")
-	 * @ORM\JoinColumn(nullable=false)
+	 * @ORM\JoinColumn(nullable=true)
 	 */
 	private $user;
 
-	/**
-	 * @ORM\Column(type="integer")
-	 */
-	private $price;
-
 	public function __construct()
-	{
-		$this->orderItems = new ArrayCollection();
-	}
+      	{
+      		$this->orderItems = new ArrayCollection();
+      	}
 
 	/**
 	 * @return Collection|AbstractOrderItem[]
 	 */
 	public function getOrderItems(): Collection
-	{
-		return $this->orderItems;
-	}
+      	{
+      		return $this->orderItems;
+      	}
 
 	/**
 	 * @param UserOrderItem|AbstractOrderItem $userOrderItem
@@ -47,39 +42,28 @@ class UserOrder extends AbstractOrder
 	 * @throws \InvalidArgumentException if $orderItems isn't UserOrderItem
 	 */
 	public function addOrderItem(AbstractOrderItem $userOrderItem): AbstractOrder
-	{
-		if (!$userOrderItem instanceof UserOrderItem)
-			throw new \InvalidArgumentException('Param $userOrderItem must be '.UserOrderItem::class);
-		return parent::addOrderItem($userOrderItem);
-	}
-
+      	{
+      		if (!$userOrderItem instanceof UserOrderItem) {
+      			throw new \InvalidArgumentException('Param $userOrderItem must be '.UserOrderItem::class);
+      		}
+      		return parent::addOrderItem($userOrderItem);
+      	}
 	/**
 	 * @param User|null $user
 	 * @return $this
-	 * @throws UnauthorizedHttpException
 	 */
 	public function setUser(?User $user): AbstractOrder
 	{
-		if (!$user)
-			throw new UnauthorizedHttpException('', 'User cannot be null');
-		$this->user = $user;
-		return $this;
-	}
+
+      		if (!$user) {
+      			throw new UnauthorizedHttpException('', 'User cannot be null');
+      		}
+      		$this->user = $user;
+      		return $this;
+      	}
 
 	public function getUser(): ?User
-	{
-		return $this->user;
-	}
-
-	public function getPrice(): ?int
-	{
-		return $this->price;
-	}
-
-	public function setPrice(int $price): self
-	{
-		$this->price = $price;
-
-		return $this;
-	}
+         	{
+         		return $this->user;
+         	}
 }

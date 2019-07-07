@@ -42,14 +42,10 @@ class UserRepository extends ServiceEntityRepository
 	public function findOneByToken($token): ?User
 	{
 		try {
-			$res = $this->createFindByTokenQB($token)
+			return $this->createFindByTokenQB($token)
 				->getQuery()
-				// ->execute();
 				->getOneOrNullResult();
-			// dd($res);
-			return ($res);
 		} catch (NonUniqueResultException $e) {
-			dd($e);
 			return null;
 		}
 	}

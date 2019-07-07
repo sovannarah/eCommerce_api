@@ -2,16 +2,21 @@
 
 namespace App\Controller;
 
-use App\Entity\{Article, Category};
+use App\Entity\{Article, Category, VariantArticle};
 use App\Repository\ArticleRepository;
+use App\Repository\CategoryRepository;
 
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\{File\UploadedFile,
 	JsonResponse,
 	Request,
 	Response};
-use Symfony\Component\HttpKernel\Exception\{BadRequestHttpException, HttpExceptionInterface};
+use Symfony\Component\HttpKernel\Exception\{BadRequestHttpException,
+	HttpExceptionInterface,
+	UnauthorizedHttpException};
 use Symfony\Component\Routing\Annotation\Route;
 
 
@@ -28,6 +33,34 @@ class ArticleController extends MyAbstractController
 	public function index(ArticleRepository $articleRepository): Response
 	{
 		return $this->json($articleRepository->findBy([],['nb_views' => 'DESC']));
+	}
+	/**
+	 * @Route("/{id}/variant", name="delete_variant", methods={"DELETE"})
+	 */
+	public function     deleteVariant(Request $quest, VariantArticle $variant)
+	{
+		try
+		{
+			$manager = $this->getDoctrine()->getManager();
+			$this->findUserOrFail($quest, true);
+			$manager->remove($variant);
+			$manager->flush();
+			return ($this->json("delete"));
+		}catch (UnauthorizedHttpException|AccessDeniedException $e)
+		{
+			return ($this->json($e->getMessage(), $e->getStatusCode()));
+		}
+	}
+
+
+	/**
+	 * @Route("/slider", name="article_slider", methods={"GET"})
+	 * @param ArticleRepository $aRep
+	 * @return JsonResponse
+	 */
+	public function getSliderArticles(ArticleRepository $aRep): JsonResponse
+	{
+		return $this->json($aRep->findBy(['showOnSlider' => true]));
 	}
 
 	/**
@@ -110,23 +143,53 @@ class ArticleController extends MyAbstractController
 		$categoryRepository = $entityManager->getRepository(Category::class);
 		$category = $request->request->get('category');
 		try {
-			$article->setCategory($categoryRepository->findOrFail($category))
-				->setUser($this->findUserOrFail($request, true))
+			if (!isset($category['id']))
+				$article->setCategory($categoryRepository->findOrFail($category));
+			else
+			{
+				$cat = $categoryRepository->findOneBy(['id' => $category['id']]);
+				$article->setCategory($cat);
+			}
+			$article->setUser($this->findUserOrFail($request, true))
 				->setTitle($request->request->get('title'))
 				->setDescription($request->request->get('description'))
 				->setPrice($request->request->get('price'))
 				->setStock($request->request->get('stock'));
+			$this->getVariant(
+				$request->request->get('variants'),
+				$article, $entityManager);
 			static::_updateImages($article, $request->files->get('images'));
 		} catch (\Exception $e) {
 			$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
 
 			return $this->json($e->getMessage(), $statusCode);
 		}
+		$showOnSlider = $request->request->getBoolean('showOnSlider', null);
+		if ($showOnSlider !== null) {
+			$article->setShowOnSlider($showOnSlider);
+		}
 		$entityManager->persist($article);
 		$entityManager->flush();
 		$entityManager->refresh($article);
 
 		return $this->json($article);
+	}
+
+	private function getVariant($quest, Article &$article, EntityManager $manager)
+	{
+		if (is_string($quest))
+			$quest = json_decode($quest, true);
+		$c = -1;
+		$lent = count($quest);
+		while (++$c < $lent)
+		{
+			$variant = new VariantArticle();
+			$variant->setSpec($quest[$c]['spec']);
+			$variant->setType($quest[$c]['type']);
+			$variant->setVarPrice($quest[$c]['var_price'] * 100);
+			$article->addVariantArticle($variant);
+			$manager->persist($variant);
+		}
 	}
 
 

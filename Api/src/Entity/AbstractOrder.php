@@ -6,7 +6,6 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * @ORM\MappedSuperclass
@@ -26,9 +25,14 @@ abstract class AbstractOrder implements \JsonSerializable
 	 */
 	private $receive;
 	/**
-	 * @ORM\Column(type="datetime")
+	 * @ORM\Column(type="datetime", nullable=true)
 	 */
 	private $send;
+
+	/**
+	 * @ORM\Column(type="integer")
+	 */
+	private $total = 0;
 
 	/**
 	 * @param \DateTimeInterface|null $receive
@@ -82,6 +86,7 @@ abstract class AbstractOrder implements \JsonSerializable
 		if (!$this->getOrderItems()->contains($stockOrderItem)) {
 			$this->getOrderItems()[] = $stockOrderItem;
 			$stockOrderItem->setOrder($this);
+			$this->total += $stockOrderItem->getQuantity() * $stockOrderItem->getArticle()->getPrice();
 		}
 
 		return $this;
@@ -95,6 +100,7 @@ abstract class AbstractOrder implements \JsonSerializable
 	{
 		if ($this->getOrderItems()->contains($orderItem)) {
 			$this->getOrderItems()->removeElement($orderItem);
+			$this->total -= $orderItem->getQuantity() * $orderItem->getArticle()->getPrice();
 			// set the owning side to null (unless already changed)
 			if ($orderItem->getOrder() === $this) {
 				$orderItem->setOrder(null);
@@ -116,13 +122,12 @@ abstract class AbstractOrder implements \JsonSerializable
 
 	public function getUser(): ?User
 	{
-		return $this->user;
+		return $this->user ?? null;
 	}
 
 	/**
 	 * @param User|null $user
 	 * @return $this
-	 * @throws UnauthorizedHttpException if $user is null
 	 */
 	abstract public function setUser(?User $user): self;
 
@@ -131,10 +136,24 @@ abstract class AbstractOrder implements \JsonSerializable
 		$jsonAble = [
 			'userId' => $this->getUser()->getId(),
 			'items' => $this->getOrderItems()->toArray(),
+			'total' => $this->getTotal(),
 		];
 		foreach (['id', 'send', 'receive'] as $item) {
 			$jsonAble[$item] = $this->{'get'.ucfirst($item)}();
 		}
+
 		return $jsonAble;
+	}
+
+	public function getTotal(): int
+	{
+		return $this->total;
+	}
+
+	public function setTotal(int $total): self
+	{
+		$this->total = $total;
+
+		return $this;
 	}
 }
