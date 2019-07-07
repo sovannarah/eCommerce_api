@@ -29,10 +29,11 @@ class ExcelController extends AbstractController
 	public function		index() {
 		$fileName = "CyrilCorpComputers.xlsx";
 		$sheets = [
-			["title" => "Users", "fc" => "fillUser"],
-			["title" => "UserOrders", "fc" => "fillOrders"],
-			["title" => "Articles", "fc" => "fillArticles"],
-			["title" => "Category", "fc" => "fillCategory"],
+			// ["title" => "Users", "fc" => "fillUser"],
+			// ["title" => "UserOrders", "fc" => "fillOrders"],
+			// ["title" => "Articles", "fc" => "fillArticles"],
+			// ["title" => "Category", "fc" => "fillCategory"],
+			["title" => "Transporters", "fc" => "fillCategory"],
 		];
 		$activeSheet = true;
 		
@@ -121,15 +122,22 @@ class ExcelController extends AbstractController
 			$cellRow++;
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getCategory()->getName());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getTitle());
-			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getDescription());
+			$sheet->getCellByColumnAndRow($cellCol, $cellRow)->setValue($article->getDescription());
+			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->getStyle()->getAlignment()->setWrapText(true);
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getPrice());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getStock());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getNbViews());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getKg());
 		}
 		$lastCol = chr(64+$cellCol);
-
-		self::autoSize($sheet, range("A", $lastCol));
+		$range = range("A", $lastCol);
+		// unset($range[2]);
+		self::autoSize($sheet, $range);
+		/* $sheet->getColumnDimension('C')->setWidth(50);
+		foreach ($rArticle as $article) {
+			$cellRow++;
+			$sheet->getRowDimension($cellRow)->setAutoSize(true);
+		} */
 		return ($sheet);
 	}
 
