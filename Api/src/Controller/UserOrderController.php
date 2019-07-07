@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\{AbstractOrder, Article, UserOrder, UserOrderItem};
 use App\Repository\ArticleRepository;
+use App\Repository\TransportModeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\HttpKernel\Exception\{AccessDeniedHttpException,
@@ -103,8 +104,10 @@ class UserOrderController extends MyAbstractController
 	}
 
 	/**
-	 * @param string[] $itemData containing fields 'id' and 'quantity'
+	 * @param $itemData
 	 * @param ArticleRepository $articleRep
+	 * @param EntityManagerInterface $eManager
+	 * @param \Swift_Mailer $mailer
 	 * @return UserOrderItem
 	 * @throws BadRequestHttpException
 	 * @throws NotFoundHttpException if no article found with given id
@@ -157,4 +160,71 @@ class UserOrderController extends MyAbstractController
 			);
 		$mailer->send($message);
 	}
+
+	//region Payment
+	/**
+	 * @Route("/{id}/pay", methods={"POST"})
+	 * @param Request $request
+	 * @param UserOrder $uo
+	 * @return JsonResponse
+	 * @uses getEmail
+	 */
+	private function pay(Request $request, UserOrder $uo): JsonResponse
+	{
+		if ($uo->getSend()) {
+			throw new BadRequestHttpException('Order already payed');
+		}
+		Stripe::setApiKey('sk_test_Rp1hCFXgQw3x7ZnR8NvBP0aq000x2BmKPK');
+		$uo->setTotal($uo->getTotal() + static::getTransportPrice($request));
+		try {
+			return $this->json(Charge::create(
+				[
+					'amount' => $uo->getTotal(),
+					'currency' => 'eur',
+					'receipt_email' => static::getEmail($request, $uo),
+					'source' => $request->request->get('cardToken'),
+				]
+			));
+		} catch (BadRequestHttpException $e) {
+			return $this->errJson($e);
+		} catch (StripeException $e) {
+			return $this->json($e->getJsonBody(), $e->getHttpStatus());
+		}
+	}
+
+
+	/**
+	 * @param Request $request
+	 * @param AbstractOrder $order
+	 * @return string
+	 * @throws BadRequestHttpException
+	 * @used-by pay
+	 */
+	private static function getEmail(Request $request, AbstractOrder $order): string
+	{
+		$email = $request->request->get('email');
+		if (!$email) {
+			$user = $order->getUser();
+			if (!$user) {
+				throw new BadRequestHttpException('Must supply email for anonymous user');
+			}
+			$email = $user->getEmail();
+		}
+		return $email;
+	}
+
+	/**
+	 * @param Request $request
+	 * @return int
+	 * @throws BadRequestHttpException
+	 * @throws NotFoundHttpException
+	 * @used-by pay
+	 */
+	private static function getTransportPrice(Request $request): int
+	{
+		//TODO get price using id (with validation)
+		return 0;
+	}
+	//endregion Payment
+
 }
