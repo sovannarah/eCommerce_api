@@ -21,8 +21,8 @@ class MyAbstractController extends AbstractController
 	 * @param Request $request
 	 * @param bool $admin weather user should be an admin
 	 * @return User
-	 * @throws AccessDeniedHttpException
 	 * @throws UnauthorizedHttpException
+	 * @throws AccessDeniedHttpException
 	 */
 	protected function findUserOrFail(Request $request, bool $admin = false): User
 	{
