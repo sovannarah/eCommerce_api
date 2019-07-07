@@ -29,9 +29,9 @@ class ExcelController extends AbstractController
 	public function		index() {
 		$fileName = "CyrilCorpComputers.xlsx";
 		$sheets = [
-			// ["title" => "Users", "fc" => "fillUser"],
-			// ["title" => "UserOrders", "fc" => "fillOrders"],
-			// ["title" => "Articles", "fc" => "fillArticles"],
+			["title" => "Users", "fc" => "fillUser"],
+			["title" => "UserOrders", "fc" => "fillOrders"],
+			["title" => "Articles", "fc" => "fillArticles"],
 			["title" => "Category", "fc" => "fillCategory"],
 		];
 		$activeSheet = true;
@@ -134,37 +134,46 @@ class ExcelController extends AbstractController
 	}
 
 	private function	fillCategory ($sheet) {
-		$headers = ["Name"];
+		$headers = ["Main category", "SubCategory", "..."];
+		$maxCol = 1;
 		self::writeHeaders($sheet, $headers);
-		
+
 		$rCategory = $this->getDoctrine()->getRepository(Category::class);
 		$rootCats = $rCategory->findBy(['parent' => null]);
 		foreach ($rootCats as $rootCat)
 			$cats[] = $rootCat->rec_nestedJsonSerialize();
+
 		$cellRow = 1;
-		dd($cats);
 		foreach ($cats as $category) {
 			$cellCol = 1;
 			$cellRow++;
-			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['name']);
-			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['artCount']);
+			$indent = 0;
+			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)
+				->setValue($category['name']." (".$category['artCount']."/".$category['totalCount'].")");
+				// ->setValue($category['name']);
+			// $sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['artCount']);
+			// $sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['totalCount']);
 			if (count($category['sub']))
-				$sheet = $this->recursiveCategory($sheet, $cellRow, $cellCol, $category['name'], $category['sub']);
+				$sheet = $this->recursiveCategory($sheet, $cellRow, $indent+1, $category['name'], $category['sub'], $maxCol);
 		}
-		$lastCol = chr(64+$cellCol);
-
+		$lastCol = chr(64+$maxCol);
 		self::autoSize($sheet, range("A", $lastCol));
 		return ($sheet);
 	}
 
 
-	private function	recursiveCategory($sheet, &$cellRow, $cellCol, $parent, $categories) {
+	private function	recursiveCategory($sheet, &$cellRow, $indent, $parent, $categories, &$maxCol) {
 		foreach ($categories as $category) {
 			$cellRow++;
-			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['name']);
-			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['artCount']);
+			$cellCol = 1 + $indent;
+			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)
+				->setValue($category['name']." (".$category['artCount']."/".$category['totalCount'].")");
+				// ->setValue($category['name']);
+			// $sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['artCount']);
+			// $sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['totalCount']);
+			$maxCol = $maxCol < $cellCol-1 ? $cellCol : $maxCol;
 			if (count($category['sub']))
-				$this->recursiveCategory($sheet, $cellRow, $cellCol+1, $category['name'], $category['sub']);
+				$this->recursiveCategory($sheet, $cellRow, $indent+1, $category['name'], $category['sub'], $maxCol);
 		}
 		return ($sheet);
 	}

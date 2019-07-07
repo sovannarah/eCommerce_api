@@ -193,7 +193,7 @@ class Category implements \JsonSerializable
 		$subs = array_map(
 			static function (Category $category) use (&$totalCount) {
 				$jsonAble = $category->rec_nestedJsonSerialize();
-				$totalCount += $jsonAble['artCount'];
+				$totalCount += $jsonAble['totalCount'];
 				return $jsonAble;
 			},
 			$this->getChildren()->toArray()
@@ -203,8 +203,8 @@ class Category implements \JsonSerializable
 			'id' => $this->getId(),
 			'name' => $this->getName(),
 			'sub' => $subs,
-			'artCount' => $this->getArticles()->count(),
-			'totalCount' => $artCount,
+			'artCount' => $artCount,
+			'totalCount' => $totalCount,
 		];
 	}
 
