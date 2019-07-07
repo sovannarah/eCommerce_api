@@ -87,6 +87,11 @@ class Article implements \JsonSerializable
 	 */
 	private $kg = 0;
 
+	/**
+	 * @ORM\Column(type="boolean", options={"default":false})
+	 */
+	private $showOnSlider = false;
+
 	public function __construct()
 	{
 		$this->orderItems = new ArrayCollection();
@@ -227,8 +232,8 @@ class Article implements \JsonSerializable
 	}
 
 	/**
-	 * Add one more view to the visited article each time it's calles
-	 * 
+	 * Add one more view to the visited article each time it's called
+	 *
 	 * @return $this
 	 */
 	public function incrementNbViews(): self
@@ -298,6 +303,7 @@ class Article implements \JsonSerializable
 
 	/**
 	 * Specify data which should be serialized to JSON
+	 *
 	 * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
 	 * @return mixed data which can be serialized by <b>json_encode</b>,
 	 * which is a value of any type other than a resource.
@@ -314,7 +320,7 @@ class Article implements \JsonSerializable
 	}
 
 	public function nestedJsonSerialize(): array
-	// private function nestedJsonSerialize(): array
+		// private function nestedJsonSerialize(): array
 	{
 		return [
 			'id' => $this->getId(),
@@ -330,8 +336,10 @@ class Article implements \JsonSerializable
 	private function orderVariants(): array
 	{
 		$ordered = [];
-		foreach ($this->getVariantArticles() as $variant)
+		foreach ($this->getVariantArticles() as $variant) {
 			$ordered[$variant->getType()][] = $variant;
+		}
+
 		return $ordered;
 	}
 
@@ -351,13 +359,14 @@ class Article implements \JsonSerializable
 	 * @param string $fieldName
 	 * @param mixed $val
 	 */
-	private static function _assertNotNegInt(string $fieldName, &$val): void {
+	private static function _assertNotNegInt(string $fieldName, &$val): void
+	{
 		if ($val < 0 || (!is_int($val) && !ctype_digit($val))) {
 			throw new InvalidParameterException(
 				$fieldName.' must be a positive or 0 int'
 			);
 		}
-		$val = (int) $val;
+		$val = (int)$val;
 	}
 
 	private static function _assertNotNull(string $fieldName, $val): void
@@ -380,6 +389,18 @@ class Article implements \JsonSerializable
 			!is_string($val)) {
 			throw new InvalidParameterException($fieldName.' invalid');
 		}
+	}
+
+	public function getShowOnSlider(): bool
+	{
+		return $this->showOnSlider;
+	}
+
+	public function setShowOnSlider(bool $showOnSlider): self
+	{
+		$this->showOnSlider = $showOnSlider;
+
+		return $this;
 	}
 
 
