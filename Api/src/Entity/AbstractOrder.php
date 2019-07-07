@@ -34,6 +34,8 @@ abstract class AbstractOrder implements \JsonSerializable
 	 */
 	private $total = 0;
 
+	protected $user;
+
 	/**
 	 * @param \DateTimeInterface|null $receive
 	 * @return $this
@@ -122,7 +124,7 @@ abstract class AbstractOrder implements \JsonSerializable
 
 	public function getUser(): ?User
 	{
-		return $this->user ?? null;
+		return $this->user;
 	}
 
 	/**

@@ -21,7 +21,7 @@ class UserOrder extends AbstractOrder
 	 * @ORM\ManyToOne(targetEntity="App\Entity\User")
 	 * @ORM\JoinColumn(nullable=true)
 	 */
-	private $user;
+	protected $user;
 
 	public function __construct()
       	{
