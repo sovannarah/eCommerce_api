@@ -30,6 +30,17 @@ class ArticleController extends MyAbstractController
 		return $this->json($articleRepository->findBy([],['nb_views' => 'DESC']));
 	}
 
+
+	/**
+	 * @Route("", name="article_slider", methods={"GET"})
+	 * @param ArticleRepository $aRep
+	 * @return JsonResponse
+	 */
+	public function getSliderArticles(ArticleRepository $aRep): JsonResponse
+	{
+		return $this->json($aRep->findBy(['showOnSlider' => true]));
+	}
+
 	/**
 	 * @Route("", name="article_new", methods={"POST"})
 	 * @param Request $request
