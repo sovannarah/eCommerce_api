@@ -1,7 +1,6 @@
 # POST NEW TRANSPORTEUR
-**Route: "/transporteur"** <br>
-**Method: POST**<br>
-**STRUCTURE REQUEST:**<br>
+`POST` `/transport`
+#### STRUCTURE REQUEST
 ```
 {
     "name": "...",
@@ -51,7 +50,7 @@ Exemple:
     "offer":
     [
         {
-            "name": "standart",
+            "name": "stand d'art",
             "spec":
             [
                 {
@@ -69,7 +68,7 @@ Exemple:
             ]
         },
         {
-            "name": "expresse",
+            "name": "ekspresse",
             "spec":
             [
                 {

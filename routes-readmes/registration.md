@@ -2,10 +2,8 @@
 
 ## LOGIN
 
-**Route: "/login"**<br>
-**Method: POST**<br>
-**Parmeters**:<br>
-type: JSON:<br>
+`POST` `/login`
+#### Parmeters `json`
 ```json
 {
     "email": "myadress@mail.com",
@@ -34,11 +32,8 @@ $user.getRoles(); //returns an array of user's roles
 ``` -->
 
 ## REGISTER
-
-**Route: "/register"**<br>
-**Method: POST**<br>
-**Parmeters**:<br>
-type: JSON:<br>
+`POST` `/register`
+#### Parmeters `json`
 ```json
 {
     "email": "myadress@mail.com",

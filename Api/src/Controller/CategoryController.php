@@ -115,6 +115,29 @@ class CategoryController extends MyAbstractController
 	}
 
 	/**
+	 * @Route("/{id}", name="del_category", methods={"DELETE"})
+	 * @param Request $request
+	 * @param Category $cat
+	 * @param EntityManagerInterface $manger
+	 * @return JsonResponse
+	 */
+	public function deleteCategory(
+		Request $request,
+		Category $cat,
+		EntityManagerInterface $manger
+	): JsonResponse {
+		$token = $request->headers->get('token');
+		if (!$token || !$manger->getRepository(User::class)
+				->findAdminByToken($token)) {
+			return $this->json('invalid token', 401);
+		}
+		$manger->remove($cat);
+		$manger->flush();
+
+		return $this->json(['Deleted' => $cat->getId()]);
+	}
+
+	/**
 	 * @param Category $category
 	 * @param $parentId
 	 * @throws InvalidParameterException | NotFoundHttpException
@@ -139,28 +162,5 @@ class CategoryController extends MyAbstractController
 			throw new InvalidParameterException('Circular hierarchy: parent category is a child');
 		}
 		$category->setParent($parent);
-	}
-
-	/**
-	 * @Route("/{id}", name="del_category", methods={"DELETE"})
-	 * @param Request $request
-	 * @param Category $cat
-	 * @param EntityManagerInterface $manger
-	 * @return JsonResponse
-	 */
-	public function deleteCategory(
-		Request $request,
-		Category $cat,
-		EntityManagerInterface $manger
-	): JsonResponse {
-		$token = $request->headers->get('token');
-		if (!$token || !$manger->getRepository(User::class)
-				->findAdminByToken($token)) {
-			return $this->json('invalid token', 401);
-		}
-		$manger->remove($cat);
-		$manger->flush();
-
-		return $this->json(['Deleted' => $cat->getId()]);
 	}
 }
