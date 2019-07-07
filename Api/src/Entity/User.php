@@ -296,7 +296,7 @@ class User implements UserInterface
 		if ($address !== null) {
 			$curUser = $address->getUser();
 			if (!$curUser || $curUser->getId() !== $this->getId()) {
-				$address->setUser($this);``
+				$address->setUser($this);
 			}
 		}
 
