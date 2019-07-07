@@ -6,6 +6,7 @@ use App\Entity\{Article, Category};
 use App\Repository\ArticleRepository;
 
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\{File\UploadedFile,
 	JsonResponse,
@@ -28,6 +29,17 @@ class ArticleController extends MyAbstractController
 	public function index(ArticleRepository $articleRepository): Response
 	{
 		return $this->json($articleRepository->findBy([],['nb_views' => 'DESC']));
+	}
+
+
+	/**
+	 * @Route("", name="article_slider", methods={"GET"})
+	 * @param ArticleRepository $aRep
+	 * @return JsonResponse
+	 */
+	public function getSliderArticles(ArticleRepository $aRep): JsonResponse
+	{
+		return $this->json($aRep->findBy(['showOnSlider' => true]));
 	}
 
 	/**
@@ -121,6 +133,10 @@ class ArticleController extends MyAbstractController
 			$statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 400;
 
 			return $this->json($e->getMessage(), $statusCode);
+		}
+		$showOnSlider = $request->request->getBoolean('showOnSlider', null);
+		if ($showOnSlider !== null) {
+			$article->setShowOnSlider($showOnSlider);
 		}
 		$entityManager->persist($article);
 		$entityManager->flush();
