@@ -233,6 +233,9 @@
     "swiftmailer/swiftmailer": {
         "version": "v6.2.1"
     },
+    "stripe/stripe-php": {
+        "version": "v6.40.0"
+    },
     "symfony/cache": {
         "version": "v4.3.1"
     },
@@ -321,6 +324,12 @@
             "src/Controller/.gitignore",
             "src/Kernel.php"
         ]
+    },
+    "symfony/http-client": {
+        "version": "v4.3.2"
+    },
+    "symfony/http-client-contracts": {
+        "version": "v1.1.5"
     },
     "symfony/http-foundation": {
         "version": "v4.3.1"

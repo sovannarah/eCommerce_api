@@ -14,73 +14,70 @@ use App\Entity\User,
 	App\Entity\UserOrder,
 	App\Repository\UserOrderRepository,
 	App\Entity\Article,
-	App\Repository\ArticleRepository;
+	App\Repository\ArticleRepository,
+	App\Entity\Category,
+	App\Controller\CategoryController,
+	App\Repository\CategoryRepository;
 
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-/**
- * @Route("/excel", name="excel")
- */
 class ExcelController extends AbstractController
 {
 	/**
-	 * @Route("/", name="excel")
+	 * @Route("/excel", name="excel", methods={"GET"})
 	 */
-	public function		index()
-	{
-		$publicDirectory = $this->getParameter('kernel.project_dir') . '/public';
-
+	public function		index() {
+		$fileName = "CyrilCorpComputers.xlsx";
+		$sheets = [
+			// ["title" => "Users", "fc" => "fillUser"],
+			// ["title" => "UserOrders", "fc" => "fillOrders"],
+			// ["title" => "Articles", "fc" => "fillArticles"],
+			// ["title" => "Category", "fc" => "fillCategory"],
+			["title" => "Transporters", "fc" => "fillCategory"],
+		];
+		$activeSheet = true;
+		
 		$spreadsheet = new Spreadsheet();
-		//USER SHEET
-		$sheet = $spreadsheet->getActiveSheet();
-		$sheet->setTitle("Users");
-		self::fillUser($sheet);
-		//ORDERS SHEET
-		$sheet = $spreadsheet->createSheet();
-		$sheet->setTitle("Orders");
-		self::fillOrders($sheet);
-		//ORDERS SHEET
-		$sheet = $spreadsheet->createSheet();
-		$sheet->setTitle("Articles");
-		self::fillArticles($sheet);
-
+		foreach ($sheets as $value) {
+			$sheet = $activeSheet ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
+			$activeSheet = false;
+			$sheet->setTitle($value['title']);
+			$sheet = $this->{$value['fc']}($sheet);
+		}
+		
 		$writer = new Xlsx($spreadsheet);
-		$excelFilepath =  $publicDirectory . '/CyrilCorpComputers.xlsx';
+		$publicDirectory = $this->getParameter('kernel.project_dir') . '/public';
+		$excelFilepath =  $publicDirectory.'/'.$fileName;
 		$writer->save($excelFilepath);
-		// return new BinaryFileResponse($excelFilepath);
-		return $this->json(["file" => 'CyrilCorpComputers.xlsx']);
-		return $this->json("Excel generated succesfully", 201);
+		return $this->json(["file" => $fileName], 201);
 	}
 
-	private function	fillUser (&$sheet)
-	{
+	private function	fillUser ($sheet) {
+		$headers = ["Email", "Role", "Address"];
+		self::writeHeaders($sheet, $headers);
+
 		$rUser = $this->getDoctrine()->getRepository(User::class)->findAll();
-		$cellRow = 0;
-		$cellCol = 1;
+		$cellRow = 1;
 
 		foreach ($rUser as $user) {
 			$cellCol = 1;
 			$cellRow++;
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($user->getEmail());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($user->getRoles()[0]);
-			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue(self::fillAddress($user->getAddress()));
+			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue(self::address($user->getAddress()));
 		}
-		// self::autoSize($sheet);
-		$sheet->getColumnDimension('A')->setAutoSize(true);
-		$sheet->getColumnDimension('B')->setAutoSize(true);
-		$sheet->getColumnDimension('C')->setAutoSize(true);
+		$lastCol = chr(64+$cellCol);
+
+		self::autoSize($sheet, range("A", $lastCol));
+		return ($sheet);
 	}
 
-	private function	fillOrders (&$sheet)
-	{
-		//headers
-		$sheet->setCellValue('A1', 'User email')->setCellValue('B1', 'Sent at')
-			->setCellValue('C1', 'To adress')->setCellValue('D1', 'Price');
-		$sheet->getStyle("A1:D1")->getFont()->setBold(true);
+	private function	fillOrders ($sheet) {
+		$headers = ["User email", "Sent at", "To address", "Price"];
+		self::writeHeaders($sheet, $headers);
 		
 		$rOrders = $this->getDoctrine()->getRepository(UserOrder::class)->findAll();
 		$cellRow = 1;
-		$cellCol = 1;
 		
 		foreach ($rOrders as $order) {
 			$cellCol = 1;
@@ -93,6 +90,7 @@ class ExcelController extends AbstractController
 				->getNumberFormat()
 				->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_CURRENCY_EUR);
 		}
+		$lastCol = chr(64+$cellCol);
 		
 		//total
 		$form = "=SUM(D2:D".$cellRow.")";
@@ -101,75 +99,111 @@ class ExcelController extends AbstractController
 			->getNumberFormat()
 			->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_CURRENCY_EUR);
 
-		/* $styleArray = array(
-			'font' => array(
-				'bold' => true,
-				'italic' => true
-			),
-			'borders' => array(
-				'outline' => array(
-					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
-					'color' => array('argb' => 'FFFF0000'),
-				),
-				'top' => array(
-					'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
-					'color' => array(
-						'rgb' => '808080'
-					)
-				)
-			)
-		); */
-		// $sheet->getStyle('B3')->applyFromArray($styleArray);
-
+		//beautify
 		$sheet->getStyle("A".$cellRow.":D".$cellRow)->getBorders()
 			->getTop()
 			->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM)
 			->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('00000000'));
 		$sheet->getStyle("A".$cellRow.":D".$cellRow)->getFont()->setBold(true);
 
-		$sheet->getColumnDimension('A')->setAutoSize(true);
-		$sheet->getColumnDimension('B')->setAutoSize(true);
-		$sheet->getColumnDimension('C')->setAutoSize(true);
-		$sheet->getColumnDimension('D')->setAutoSize(true);
+		self::autoSize($sheet, range("A", $lastCol));
+		return ($sheet);
 	}
 
-	private function	fillArticles (&$sheet)
-	{
+	private function	fillArticles ($sheet) {
+		$headers = ["Category", "Title", "Description", "Price", "In stock", "Nb views", "Kg"];
+		self::writeHeaders($sheet, $headers);
+
 		$rArticle = $this->getDoctrine()->getRepository(Article::class)->findAll();
-		$cellRow = 0;
-		$cellCol = 1;
+		$cellRow = 1;
 
 		foreach ($rArticle as $article) {
 			$cellCol = 1;
 			$cellRow++;
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getCategory()->getName());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getTitle());
-			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getDescription());
+			$sheet->getCellByColumnAndRow($cellCol, $cellRow)->setValue($article->getDescription());
+			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->getStyle()->getAlignment()->setWrapText(true);
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getPrice());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getStock());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getNbViews());
 			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($article->getKg());
 		}
-		$sheet->getColumnDimension('A')->setAutoSize(true);
-		$sheet->getColumnDimension('B')->setAutoSize(true);
-		$sheet->getColumnDimension('C')->setAutoSize(true);
-		$sheet->getColumnDimension('D')->setAutoSize(true);
-		$sheet->getColumnDimension('E')->setAutoSize(true);
-		$sheet->getColumnDimension('F')->setAutoSize(true);
-		$sheet->getColumnDimension('G')->setAutoSize(true);
-		// die();
+		$lastCol = chr(64+$cellCol);
+		$range = range("A", $lastCol);
+		// unset($range[2]);
+		self::autoSize($sheet, $range);
+		/* $sheet->getColumnDimension('C')->setWidth(50);
+		foreach ($rArticle as $article) {
+			$cellRow++;
+			$sheet->getRowDimension($cellRow)->setAutoSize(true);
+		} */
+		return ($sheet);
 	}
 
-	private function fillAddress($address) {
+	private function	fillCategory ($sheet) {
+		$headers = ["Main category", "SubCategory", "..."];
+		$maxCol = 1;
+		self::writeHeaders($sheet, $headers);
+
+		$rCategory = $this->getDoctrine()->getRepository(Category::class);
+		$rootCats = $rCategory->findBy(['parent' => null]);
+		foreach ($rootCats as $rootCat)
+			$cats[] = $rootCat->rec_nestedJsonSerialize();
+
+		$cellRow = 1;
+		foreach ($cats as $category) {
+			$cellCol = 1;
+			$cellRow++;
+			$indent = 0;
+			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)
+				->setValue($category['name']." (".$category['artCount']."/".$category['totalCount'].")");
+				// ->setValue($category['name']);
+			// $sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['artCount']);
+			// $sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['totalCount']);
+			if (count($category['sub']))
+				$sheet = $this->recursiveCategory($sheet, $cellRow, $indent+1, $category['name'], $category['sub'], $maxCol);
+		}
+		$lastCol = chr(64+$maxCol);
+		self::autoSize($sheet, range("A", $lastCol));
+		return ($sheet);
+	}
+
+
+	private function	recursiveCategory($sheet, &$cellRow, $indent, $parent, $categories, &$maxCol) {
+		foreach ($categories as $category) {
+			$cellRow++;
+			$cellCol = 1 + $indent;
+			$sheet->getCellByColumnAndRow($cellCol++, $cellRow)
+				->setValue($category['name']." (".$category['artCount']."/".$category['totalCount'].")");
+				// ->setValue($category['name']);
+			// $sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['artCount']);
+			// $sheet->getCellByColumnAndRow($cellCol++, $cellRow)->setValue($category['totalCount']);
+			$maxCol = $maxCol < $cellCol-1 ? $cellCol : $maxCol;
+			if (count($category['sub']))
+				$this->recursiveCategory($sheet, $cellRow, $indent+1, $category['name'], $category['sub'], $maxCol);
+		}
+		return ($sheet);
+	}
+
+	private function	address($address) {
 		if ($address)
 			return $address->getStreet().", ".$address->getPc();
 		else
 			return "Undefined";
 	}
 
-	/* private function autoSize(&$sheet) {
+	private function	autoSize(&$sheet, $range) {
+		foreach ($range as $col)
+			$sheet->getColumnDimension($col)->setAutoSize(true);
+	}
 
-	} */
+	private function	writeHeaders(&$sheet, $headers) {
+		foreach ($headers as $col => $title)
+			$sheet->getCellByColumnAndRow($col+1, 1)->setValue($title);
+		$sheet->getStyle("A1:".chr(64+count($headers))."1")
+			->getFont()->setBold(true);
+	}
 }
 
 /* 
@@ -189,3 +223,37 @@ BORDER STYLES:
 	BORDER_THICK            = 'thick';
 	BORDER_THIN             = 'thin';
 */
+
+
+/* $styleArray = array(
+	'font' => array(
+		'bold' => true,
+		'italic' => true
+	),
+	'borders' => array(
+		'outline' => array(
+			'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+			'color' => array('argb' => 'FFFF0000'),
+		),
+		'top' => array(
+			'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+			'color' => array(
+				'rgb' => '808080'
+			)
+		)
+	)
+);
+$sheet->getStyle('B3')->applyFromArray($styleArray); */
+
+/* //USER SHEET
+$sheet = $spreadsheet->getActiveSheet();
+$sheet->setTitle("Users");
+self::fillUser($sheet);
+//ORDERS SHEET
+$sheet = $spreadsheet->createSheet();
+$sheet->setTitle("Orders");
+self::fillOrders($sheet);
+//ORDERS SHEET
+$sheet = $spreadsheet->createSheet();
+$sheet->setTitle("Articles");
+self::fillArticles($sheet); */

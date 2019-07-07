@@ -77,14 +77,14 @@ class VariantArticle implements \JsonSerializable
 		return $this;
 	}
 
-	public function getVarPrice(): ?int
+	public function getVarPrice(): ?float
 	{
-		return $this->varPrice;
+		return $this->varPrice / 100;
 	}
 
-	public function setVarPrice(int $varPrice): self
+	public function setVarPrice(float $varPrice): self
 	{
-		$this->varPrice = $varPrice;
+		$this->varPrice = (int) ($varPrice * 100);
 
 		return $this;
 	}

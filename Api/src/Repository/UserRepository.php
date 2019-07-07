@@ -54,9 +54,9 @@ class UserRepository extends ServiceEntityRepository
 	{
 		return $this->createQueryBuilder('u')
 				->where('u.token = :token')
-				 ->andWhere('u.token_expiration > :now')
+				->andWhere('u.token_expiration > :now')
 				->setParameter('token', $token)
-				 ->setParameter('now', new \DateTime());
+				->setParameter('now', new \DateTime());
 	}
 	// /**
 	//  * @return User[] Returns an array of User objects

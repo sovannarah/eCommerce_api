@@ -42,6 +42,11 @@ class SpecOffer
      */
     private $offer;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $minPrice;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -103,6 +108,18 @@ class SpecOffer
     public function setOffer(?TransportOffer $offer): self
     {
         $this->offer = $offer;
+
+        return $this;
+    }
+
+    public function getMinPrice(): ?int
+    {
+        return $this->minPrice;
+    }
+
+    public function setMinPrice(int $minPrice): self
+    {
+        $this->minPrice = $minPrice;
 
         return $this;
     }

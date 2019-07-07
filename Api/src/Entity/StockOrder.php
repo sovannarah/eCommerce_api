@@ -18,11 +18,11 @@ class StockOrder extends AbstractOrder
 	 */
 	private $orderItems;
 
-	/**
-	 * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="stockOrders")
-	 * @ORM\JoinColumn(nullable=false)
-	 */
-	private $user;
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="stockOrders")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    protected $user;
 
 	public function __construct()
 	{

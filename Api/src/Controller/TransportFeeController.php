@@ -21,6 +21,9 @@ class TransportFeeController extends MyAbstractController
 {
 	/**
 	 * @Route("", name="getTransporters", methods={"GET"})
+	 * @param Request $req
+	 * @param TransportModeRepository $rTransport
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
 	public function		getTransporters(Request $req,
 		TransportModeRepository $rTransport)
@@ -102,10 +105,12 @@ class TransportFeeController extends MyAbstractController
 			return ($this->json($e->getMessage(), $e->getStatusCode()));
 		}
 	}
+
 	/**
 	 * @Route("/{id}", name="update_transport", methods={"PUT"})
 	 * @param Request $req
 	 * @param TransportMode $transport
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
 	public function     update(Request $req, TransportMode $transport)
 	{
@@ -149,28 +154,17 @@ class TransportFeeController extends MyAbstractController
 				if ($flagNewOffer === true)
 				{
 					$specNew = new SpecOffer();
-					$specNew->setName($specs[$c2]['name']);
-					$specNew->setUnity($specs[$c2]['unity']);
-					$specNew->setMinValue($specs[$c2]['minValue']);
-					$specNew->setPrice( $specs[$c2]['price']);
+					$this->setSpecOffer($specNew, $specs[$c]);
 					$offernew->addSpecOffer($specNew);
 				}
 				else if (!isset($specs[$c2]['id']))
 				{
 					$specNew = new SpecOffer();
-					$specNew->setName($specs[$c2]['name']);
-					$specNew->setUnity($specs[$c2]['unity']);
-					$specNew->setMinValue($specs[$c2]['minValue']);
-					$specNew->setPrice( $specs[$c2]['price']);
+					$this->setSpecOffer($specNew, $specs[$c]);
 					$offer[$c]->addSpecOffer($specNew);
 				}
 				else
-				{
-					$spec[$c2]->setName($specs[$c2]['name']);
-					$spec[$c2]->setUnity($specs[$c2]['unity']);
-					$spec[$c2]->setMinValue($specs[$c2]['minValue']);
-					$spec[$c2]->setPrice( $specs[$c2]['price']);
-				}
+					$this->setSpecOffer($spec[$c], $specs[$c], true);
 			}
 			if ($flagNewOffer === true)
 			{
@@ -183,9 +177,29 @@ class TransportFeeController extends MyAbstractController
 		$manager->flush();
 //		$manager->refresh($transport);
 	}
-
+	private function setSpecOffer(&$spec, $specs, $flag = false)
+	{
+		if ($flag === true)
+		{
+			$spec->setName($specs['name']);
+			$spec->setUnity($specs['unity']);
+			$spec->setMinValue((float) $specs['minValue'] * 100);
+			$spec->setMinValue((float) $specs['minValue'] * 100);
+			$spec->setPrice((float) $specs['price'] * 100);
+		}
+		else
+		{
+			$spec->setName($specs['name']);
+			$spec->setUnity($specs['unity']);
+			$spec->setMinValue($specs['minValue']);
+			$spec->setMinValue($specs['minPrice']);
+			$spec->setPrice( $specs['price']);
+		}
+	}
 	/**
 	 * @Route("", name="create_transport_fee" ,methods={"POST"})
+	 * @param Request $req
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 */
 	public function     create(Request $req)
 	{
@@ -226,6 +240,7 @@ class TransportFeeController extends MyAbstractController
 		{
 			if (is_array($value) && isset($tEntity[$count]))
 			{
+				var_dump($value);
 				$c = -1;
 				while (isset($value[++$c]))
 				{
@@ -256,9 +271,11 @@ class TransportFeeController extends MyAbstractController
 		else if ($entity instanceof SpecOffer)
 		{
 			if ($key === 'minValue')
-				$entity->setMinValue($value);
+				$entity->setMinValue((float) $value * 100);
+			else if ($key === 'minPrice')
+				$entity->setMinPrice((float) $value * 100);
 			else if ($key === 'price')
-				$entity->setPrice($value);
+				$entity->setPrice((float) $value * 100);
 			else if ($key === 'unity')
 				$entity->setUnity($value);
 		}
