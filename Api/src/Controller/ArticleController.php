@@ -6,6 +6,7 @@ use App\Entity\{Article, Category};
 use App\Repository\ArticleRepository;
 
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\{File\UploadedFile,
 	JsonResponse,

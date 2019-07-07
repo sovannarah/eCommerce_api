@@ -42,14 +42,10 @@ class UserRepository extends ServiceEntityRepository
 	public function findOneByToken($token): ?User
 	{
 		try {
-			$res = $this->createFindByTokenQB($token)
+			return $this->createFindByTokenQB($token)
 				->getQuery()
-				// ->execute();
 				->getOneOrNullResult();
-			// dd($res);
-			return ($res);
 		} catch (NonUniqueResultException $e) {
-			dd($e);
 			return null;
 		}
 	}
@@ -58,9 +54,9 @@ class UserRepository extends ServiceEntityRepository
 	{
 		return $this->createQueryBuilder('u')
 				->where('u.token = :token')
-				// ->andWhere('u.token_expiration < :now')
-				->setParameter('token', $token);
-				// ->setParameter('now', new \DateTime());
+				 ->andWhere('u.token_expiration > :now')
+				->setParameter('token', $token)
+				 ->setParameter('now', new \DateTime());
 	}
 	// /**
 	//  * @return User[] Returns an array of User objects

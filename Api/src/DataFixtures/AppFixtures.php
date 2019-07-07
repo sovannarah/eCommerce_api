@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Controller\AuthController;
+use App\Entity\Address;
 use App\Entity\Article;
 use App\Entity\Category;
 use App\Entity\StockOrder;
@@ -36,6 +37,7 @@ class AppFixtures extends Fixture
 		$generator = Factory::create();
 		$populator = new Populator($generator, $manager);
 		$this->_addUsers($populator);
+		$populator->addEntity(Address::class, 5);
 		static::_addCategories($populator, $generator);
 		static::_addArticles($populator, $generator);
 		$populator->addEntity(UserOrder::class, 10);

@@ -6,7 +6,6 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * @ORM\MappedSuperclass
@@ -116,13 +115,12 @@ abstract class AbstractOrder implements \JsonSerializable
 
 	public function getUser(): ?User
 	{
-		return $this->user;
+		return $this->user ?? null;
 	}
 
 	/**
 	 * @param User|null $user
 	 * @return $this
-	 * @throws UnauthorizedHttpException if $user is null
 	 */
 	abstract public function setUser(?User $user): self;
 

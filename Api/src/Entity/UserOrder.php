@@ -19,7 +19,7 @@ class UserOrder extends AbstractOrder
 
 	/**
 	 * @ORM\ManyToOne(targetEntity="App\Entity\User")
-	 * @ORM\JoinColumn(nullable=false)
+	 * @ORM\JoinColumn(nullable=true)
 	 */
 	private $user;
 
@@ -56,19 +56,11 @@ class UserOrder extends AbstractOrder
 	/**
 	 * @param User|null $user
 	 * @return $this
-	 * @throws UnauthorizedHttpException
 	 */
 	public function setUser(?User $user): AbstractOrder
 	{
-		if (!$user)
-			throw new UnauthorizedHttpException('', 'User cannot be null');
 		$this->user = $user;
 		return $this;
-	}
-
-	public function getUser(): ?User
-	{
-		return $this->user;
 	}
 
 	public function getPrice(): ?int
