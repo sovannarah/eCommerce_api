@@ -33,7 +33,7 @@ class ArticleController extends MyAbstractController
 
 
 	/**
-	 * @Route("", name="article_slider", methods={"GET"})
+	 * @Route("/slider", name="article_slider", methods={"GET"})
 	 * @param ArticleRepository $aRep
 	 * @return JsonResponse
 	 */
