@@ -184,21 +184,27 @@ class Category implements \JsonSerializable
 				'name' => $child->getName(),
 			];
 		}
-
 		return $serializableChildren;
 	}
 
 	public function rec_nestedJsonSerialize(): array
 	{
+		$totalCount = $artCount = $this->getArticles()->count();
+		$subs = array_map(
+			static function (Category $category) use (&$totalCount) {
+				$jsonAble = $category->rec_nestedJsonSerialize();
+				$totalCount += $jsonAble['totalCount'];
+				return $jsonAble;
+			},
+			$this->getChildren()->toArray()
+		);
+		
 		return [
 			'id' => $this->getId(),
 			'name' => $this->getName(),
-			'sub' => array_map(
-				static function (Category $category) {
-					return $category->rec_nestedJsonSerialize();
-				},
-				$this->getChildren()->toArray()
-			),
+			'sub' => $subs,
+			'artCount' => $artCount,
+			'totalCount' => $totalCount,
 		];
 	}
 
