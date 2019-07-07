@@ -164,6 +164,8 @@ def analyse_init():
 def mesure_distance():
 	print("======== distance init ==========")
 	quest = request.args.copy()
+	print("=========")
+	print(quest)
 	if not quest['ad1'] or not quest['ad2']:
 		resp = make_response('bad request')
 		return resp
@@ -173,8 +175,8 @@ def mesure_distance():
 		float(gps_coordinate1[0]['lat']),
 		float(gps_coordinate1[0]['lon']))
 	print("===== coord 1 =====")
-	print(corrdinat1[1])
 	gps_coordinate2 = requests.get(enterPoint + '&q=' + quest['ad2']).json()
+	print(gps_coordinate2)
 	corrdinat2 =(
 		float(gps_coordinate2[0]['lat']),
 		float(gps_coordinate2[0]['lon']))
