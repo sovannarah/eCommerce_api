@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
-use App\Entity\{AbstractOrder, Article, UserOrder, UserOrderItem};
+use App\Entity\{AbstractOrder, Article, TransportMode, UserOrder, UserOrderItem};
 use App\Repository\ArticleRepository;
+use App\Repository\TransportModeRepository;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\{Charge, Error\Base as StripeException, Stripe};
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
@@ -43,14 +45,42 @@ class UserOrderController extends MyAbstractController
 	 * @param Request $quest
 	 * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
 	 */
-	public function     getPriceOnAdresss(Request $quest)
+	public function     getPriceOnAdresss(Request $quest,
+		TransportModeRepository $rTransport, EntityManager $manager)
 	{
-		var_dump($quest->request->all());
-		$adress2 = '&ad2=';
-		$reqText = 'http://127.0.0.1:5000/distance?ad1=' + $this->address + $adress2;
+		$req = $quest->request->all();
+		$adress2 = '&ad2=' . $req['address'] . ' ' . $req['cp'];
+		$transport = $rTransport->find(1);
+		$reqText = 'http://127.0.0.1:5000/distance?ad1=' . $this->address . $adress2;
 		$httpClient = HttpClient::create();
+		$articles = $req['articles'];
 		$request = $httpClient->request('GET', $reqText);
+		var_dump($request);
+		$distance = null;
+		$tPrice = $this->getPriceOfOffers($transport, $distance, $articles, $manager);
+	}
 
+	private function     getPriceOfOffers(TransportMode $transport, float $distance,
+		array $articles, EntityManager $manager)
+	{
+		$c1 = -1;
+		$len1 = count($articles);
+		$articleR = $manager->getRepository(Article::class);
+		while (++$c1 < $len1)
+		{
+			try
+			{
+				$article = $articleR->find($articles[$c1]['id']);
+				$quantity = $articles[$c1]['quantity'];
+				if (isset($articles[$c1]['variant_id']))
+				{
+					$article->getVariantArticles();
+				}
+			}catch (\Exception $e)
+			{
+				return ($this->json($e->getMessage(). $e->getStatusCode()));
+			}
+		}
 	}
 
 	/**

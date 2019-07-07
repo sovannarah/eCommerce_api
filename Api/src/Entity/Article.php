@@ -78,7 +78,7 @@ class Article implements \JsonSerializable
 	private $orderItems;
 
 	/**
-	 * @ORM\OneToMany(targetEntity="App\Entity\VariantArticle", mappedBy="parent", orphanRemoval=true)
+	 * @ORM\OneToMany(targetEntity="App\Entity\VariantArticle", mappedBy="parent")
 	 */
 	private $variantArticles;
 
@@ -323,6 +323,7 @@ class Article implements \JsonSerializable
 			'price' => $this->getPrice(),
 			'nb_views' => $this->getNbViews(),
 			'stock' => $this->getStock(),
+			'variants' => $this->getVariantArticles(),
 			'images' => $this->_jsonSerializeImages(),
 			'kg' => $this->getKg(),
 		];

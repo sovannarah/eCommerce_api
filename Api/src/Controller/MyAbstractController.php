@@ -45,7 +45,7 @@ class MyAbstractController extends AbstractController
 	 */
 	protected function tryFindUser(Request $request, bool $admin = false): ?User
 	{
-		$token = $request->request->get('token');
+		$token = $request->headers->get('token');
 		if (!$token) {
 			throw new UnauthorizedHttpException('', 'Missing Token');
 		}
